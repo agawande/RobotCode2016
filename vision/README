@@ -1,0 +1,9 @@
+Just playing with the sample code (squares.py) which can detect squares in an image.
+
+Some resources I found:
+
+http://eric-yuan.me/simple-qr-code-scanner-1/
+
+http://blog.ayoungprogrammer.com/2014/04/real-time-qr-code-bar-code-detection.html
+
+http://www.codeplats.com/CJVkUXqkgV/how-to-detect-a-single-qr-code-using-opencv-python-and-zbar.html
