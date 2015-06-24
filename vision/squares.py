@@ -38,9 +38,9 @@ def find_squares(img):
 if __name__ == '__main__':
     from glob import glob
     #for fn in glob('../data/pic*.png'):
-    for fn in glob('/home/ashu/Downloads/qrco*.jpg'):
+    for fn in glob('qrco*.jpg'):
         img = cv2.imread(fn)
-        #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if we need gray scale
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #if we need gray scale
         squares = find_squares(img)
         cv2.drawContours( img, squares, -1, (0, 255, 0), 3 )
         cv2.imshow('squares', img)
