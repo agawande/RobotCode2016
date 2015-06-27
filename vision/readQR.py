@@ -6,8 +6,10 @@ img = cv2.imread("qr.png")
 img = cv2.imread("qrcode_simple.png")
 img = cv2.imread("qrcode.jpg")
 img = cv2.imread("qrcode2.jpg")
+#img = cv2.imread("qrcode.jpg")
 
 # convert to greyscale
+img_orig = img
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # coverting to binary - threshold
@@ -51,11 +53,9 @@ for cnt in contours:
             qrSquares.append(cnt)
     count+=1
 
-cv2.drawContours( img, qrSquares, -1, (0, 255, 0), 30 )
+cv2.drawContours( img_orig, qrSquares, -1, (0, 255, 0), 30 )
 
-#print(count)
-
-image = cv2.resize(img, (0,0), fx=0.20, fy=0.20)
+image = cv2.resize(img_orig, (0,0), fx=0.20, fy=0.20)
 
 cv2.imshow('squares', image)
 
