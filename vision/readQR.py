@@ -4,12 +4,13 @@ import time
 
 img = cv2.imread("qr.png")
 img = cv2.imread("qrcode_simple.png")
-img = cv2.imread("qrcode.jpg")
-img = cv2.imread("qrcode2.jpg")
 #img = cv2.imread("qrcode.jpg")
+#img = cv2.imread("qrcode2.jpg")
+#img = cv2.imread("q3.jpg")
 
 # convert to greyscale
 img_orig = img
+
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # coverting to binary - threshold
@@ -53,11 +54,80 @@ for cnt in contours:
             qrSquares.append(cnt)
     count+=1
 
-cv2.drawContours( img_orig, qrSquares, -1, (0, 255, 0), 30 )
+# Draw qr contours on original image
+image = cv2.drawContours( img_orig, qrSquares, -1, (0, 255, 0), 5 )
 
-image = cv2.resize(img_orig, (0,0), fx=0.20, fy=0.20)
+#image = cv2.resize(img_orig, (0,0), fx=0.20, fy=0.20)
 
 cv2.imshow('squares', image)
+
+cv2.waitKey(0)
+
+cv2.destroyAllWindows()
+
+
+count=0
+qrCentroid = {}
+for cnt in qrSquares:
+    M = cv2.moments(cnt)
+    cx = int(M['m10']/M['m00'])
+    cy = int(M['m01']/M['m00'])
+    img = cv2.circle(img_orig,(cx,cy), 6, (0,0,255), -1)
+
+    qrCentroid[count] = str(cx)+":"+str(cy)
+    count+=1
+    
+# dist b/w two centroids = root((x-x1)^2 + (y-y1)^2)
+dist01 = ((int(qrCentroid[0].split(":")[0]) - int(qrCentroid[1].split(":")[0]))**2 + (int(qrCentroid[0].split(":")[1]) - int(qrCentroid[1].split(":")[1]))**2)**0.5
+dist02 = ((int(qrCentroid[0].split(":")[0]) - int(qrCentroid[2].split(":")[0]))**2 + (int(qrCentroid[0].split(":")[1]) - int(qrCentroid[2].split(":")[1]))**2)**0.5
+dist12 = ((int(qrCentroid[1].split(":")[0]) - int(qrCentroid[2].split(":")[0]))**2 + (int(qrCentroid[1].split(":")[1]) - int(qrCentroid[2].split(":")[1]))**2)**0.5
+
+print dist01
+print dist02
+print dist12
+
+# determine which contour is topleft
+if dist01 > dist02 and dist01 > dist12:
+    topleft = 2
+    a,b = 0,1
+elif dist02 > dist01 and dist02 > dist01:
+    topleft = 1
+    a,b = 0,2
+else:
+    topeleft = 0
+    a,b = 1,2
+
+# center of longest line using
+centerx=(int(qrCentroid[a].split(":")[0]) + int(qrCentroid[b].split(":")[0]))/2
+centery=(int(qrCentroid[a].split(":")[1]) + int(qrCentroid[b].split(":")[1]))/2
+
+print "center x: ", centerx
+print "center y: ", centery
+
+# just seeing where it actually marks it on the image
+img = cv2.circle(img,(centerx,centery), 5, (0,0,255), -1)
+
+# get slope of the longest line
+slope = (int(qrCentroid[a].split(":")[1]) - int(qrCentroid[b].split(":")[1]))/(int(qrCentroid[a].split(":")[0]) - int(qrCentroid[b].split(":")[0]))
+
+# get the slope of the perpendicular to the longest line using the center of the longest line and the centroid of the top left
+m_Per = (centery - int(qrCentroid[topleft].split(":")[1]))/(centerx - int(qrCentroid[topleft].split(":")[0]))
+
+
+if (slope > 0 and m_Per >=0) or (slope < 0 and m_Per < 0):
+    right = b
+    bottom = a
+elif (slope < 0 and m_Per >=0) or (slope >= 0 and m_Per < 0):
+    right = a
+    bottom = b
+
+# now we need to get the four corners of topleft, bottom, and right
+for cnt in qrSquares:
+    print cnt
+
+#img = cv2.circle(img,(44, 344), 5, (0,0,255), -1)
+
+cv2.imshow('centroid', img)
 
 cv2.waitKey(0)
 
