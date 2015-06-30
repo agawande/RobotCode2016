@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
 import time
+import qrtools
 
 img = cv2.imread("qr.png")
 img = cv2.imread("qrcode_simple.png")
-#img = cv2.imread("qrcode.jpg")
+img = cv2.imread("qrcode.jpg")
 #img = cv2.imread("qrcode2.jpg")
 #img = cv2.imread("q3.jpg")
 
@@ -115,20 +116,83 @@ m_Per = (centery - int(qrCentroid[topleft].split(":")[1]))/(centerx - int(qrCent
 
 
 if (slope > 0 and m_Per >=0) or (slope < 0 and m_Per < 0):
+    right = a
+    bottom = b
+elif (slope < 0 and m_Per >=0) or (slope >= 0 and m_Per < 0):
     right = b
     bottom = a
-elif (slope < 0 and m_Per >=0) or (slope >= 0 and m_Per < 0):
+else:  # else randomly assign, works for acute angles - i think
     right = a
     bottom = b
 
-# now we need to get the four corners of topleft, bottom, and right
-for cnt in qrSquares:
-    print cnt
+#img = cv2.circle(img,(int(qrCentroid[bottom].split(":")[0]), int(qrCentroid[bottom].split(":")[1])), 10, (0,0,255), -1)
 
-#img = cv2.circle(img,(44, 344), 5, (0,0,255), -1)
+# now we need to get the four corners of topleft, bottom, and right
+count=0
+for cnt in qrSquares:
+    if count == topleft:
+        cnt_top = cnt
+    elif count == right:
+        cnt_right = cnt
+    elif count == bottom:
+        cnt_bottom = cnt
+    count+=1
+#    print list(cnt)
+#    for i in range (0, len(list(cnt))):
+#        print list(cnt)[i][0][0], " ", list(cnt)[i][0][1]
+#        print ""
+    #print farthest_point()
+
+
+
+#img = cv2.circle(img,(0, 0), 5, (0,0,255), -1)
 
 cv2.imshow('centroid', img)
 
 cv2.waitKey(0)
 
 cv2.destroyAllWindows()
+
+def farthest_point(cnt, c_x, c_y):
+    #img = cv2.imread("qrcode.jpg")
+    distlist = []
+    max = 0
+    for i in range (0, len(list(cnt))):
+        cntx = int(list(cnt)[i][0][0])
+        cnty = int(list(cnt)[i][0][1])
+        dist = ((cntx-c_x)**2+(cnty-c_y)**2)**0.5
+        if dist > max:
+            max = dist
+            cntx_max = cntx
+            cnty_max = cnty
+        distlist.append(dist)
+    #img = cv2.circle(img,(cntx_max,cnty_max), 5, (0,0,255), -1)
+    #cv2.imshow('hello'+str(cntx_max), img)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    return int(cntx_max), int(cnty_max)
+
+crx, cry = farthest_point(cnt_right, centerx, centery)
+cbx, cby = farthest_point(cnt_bottom, centerx, centery)
+ctx, cty = farthest_point(cnt_top, centerx, centery)
+
+img = cv2.imread("qrcode.jpg")
+pts1 = np.float32([[ctx,cty],[cbx,cby],[crx,cry]])
+pts2 = np.float32([[0,0],[300,0],[0,300]])
+
+M = cv2.getAffineTransform(pts1,pts2)
+
+dst = cv2.warpAffine(img,M,(300,300))
+
+cv2.imshow('hello', img)
+cv2.imshow('dst', dst)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+cv2.imwrite("hello.png",dst)
+
+qr = qrtools.QR()
+qr.decode("hello.png")
+print("\nData:\n")
+print(qr.data)
