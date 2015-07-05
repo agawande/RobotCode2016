@@ -7,7 +7,7 @@ img = cv2.imread("qr.png")
 img = cv2.imread("qrcode_simple.png")
 img = cv2.imread("qrcode.jpg")
 #img = cv2.imread("qrcode2.jpg")
-#img = cv2.imread("q3.jpg")
+#img = cv2.imread("qr3.jpg")
 
 # convert to greyscale
 img_orig = img
@@ -23,6 +23,8 @@ canny=cv2.Canny(thresh1, 100, 200)
 # find contours, http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_contours/py_contours_begin/py_contours_begin.html
 image, contours, hierarchy = cv2.findContours(canny,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 #RETR_TREE: read heirarchies
+
+cv2.imshow("wjhfd", image)
 
 print hierarchy
 
@@ -46,6 +48,7 @@ for cnt in contours:
     if g5child == -1:
         # if child hierarchy is legit
         if child+1 == gchild and gchild+1 == g2child and g2child+1 == g3child and g3child+1 == g4child:
+            print "hello"
             print child
             print gchild
             print g2child
@@ -143,8 +146,6 @@ for cnt in qrSquares:
 #        print ""
     #print farthest_point()
 
-
-
 #img = cv2.circle(img,(0, 0), 5, (0,0,255), -1)
 
 cv2.imshow('centroid', img)
@@ -177,7 +178,8 @@ cbx, cby = farthest_point(cnt_bottom, centerx, centery)
 ctx, cty = farthest_point(cnt_top, centerx, centery)
 
 img = cv2.imread("qrcode.jpg")
-pts1 = np.float32([[ctx,cty],[cbx,cby],[crx,cry]])
+pts1 = np.float32([[ctx,cty],[crx,cry],[cbx,cby]])
+#pts1 = np.float32([[ctx,cty],[cbx,cby],[crx,cry]])
 pts2 = np.float32([[0,0],[300,0],[0,300]])
 
 M = cv2.getAffineTransform(pts1,pts2)
@@ -188,7 +190,6 @@ cv2.imshow('hello', img)
 cv2.imshow('dst', dst)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
 
 cv2.imwrite("hello.png",dst)
 
