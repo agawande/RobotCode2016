@@ -69,6 +69,7 @@ cv2.waitKey(0)
 
 cv2.destroyAllWindows()
 
+print "hell"
 
 count=0
 qrCentroid = {}
@@ -98,7 +99,7 @@ elif dist02 > dist01 and dist02 > dist01:
     topleft = 1
     a,b = 0,2
 else:
-    topeleft = 0
+    topleft = 0
     a,b = 1,2
 
 # center of longest line using
