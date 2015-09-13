@@ -1,0 +1,102 @@
+
+i2c basic so far
+
+
+
+
+gpio -v
+gpio readall
+
+
+
+i2cdetect -y 1		//detects all devices connected to pi through i2c
+
+
+
+
+
+
+Command		Code	Distance
+
+
+
+Move North 0x0000 MAX DISTANCE:
+
+813678591
+
+
+
+Move South 0x0001 MAX DISTANCE:
+
+830455807
+
+
+
+Move West 0x0010 MAX DISTANCE:
+
+847233023
+
+
+
+Move East 0x0011 MAX DISTANCE:
+
+864010239
+
+
+
+Spin Clockwise 0x0100 MAX DISTANCE
+:
+880787455
+
+
+
+Spin Anti-Clockwise 0x0101 MAX DISTANCE:
+
+897564671
+
+
+
+
+DIAGONAL MOVMENT relative to the robot (Distance will be sqrt(x^2 + y^2) since simulatenous moving in both directions)
+	
+
+
+Quadrant I 0x0110 MAX DISTANCE:
+
+914341887
+
+
+
+Quadrant II 0x0110 MAX DISTANCE:
+
+931119103
+
+
+
+Quadrant III 0x0110 MAX DISTANCE:
+
+947896319
+
+
+
+Quadrant IV 0x0110 MAX DISTANCE:
+
+964673535
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+357fbfff
