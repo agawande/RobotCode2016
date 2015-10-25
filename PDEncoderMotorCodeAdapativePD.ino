@@ -172,7 +172,7 @@ void loop()
   state = 1;
   //The runAll function is repeatedly ran, this function branches out to the rest of the functions
   runAll();  
-  adaptValues();  
+  //adaptValues();  
 }
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MAIN LOOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -870,68 +870,68 @@ void synchronizeAll()
     analogWrite(pX2[2], (lowerSpeed));
   } 
 }
-
-void adaptValues()
-{
-    if(distanceToGoX() > 0 && distanceToGoX() < 2001)
-    {
-      float tempkp;
-      float tempkd;
-      float tempStepSize;
-      
-      tempkd = (((distanceToGoX() - 2000)*8)/19990) + 1;
-      tempkp = (((distanceToGoX() - 2000)*7)/1999) + 22;
-      tempStepSize =  (((distanceToGoX() - 2000) * 35)/1999) + 50;
-      
-      
-        X1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);                 //Sets the initial value settings for each motor
-        X2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
-        
-            Serial.println(tempkp);
-    Serial.println(tempkd);
-    Serial.println(tempStepSize);
-
-    }
-      else if (distanceToGoY() > 0 && distanceToGoY() < 2001) 
-      {
-        float tempkp;
-        float tempkd;
-        float tempStepSize;
-      
-        tempkd = (((distanceToGoY() - 2000)*8)/19990) + 1;
-        tempkp = (((distanceToGoY() - 2000)*7)/1999) + 22;
-        tempStepSize =  (((distanceToGoY() - 2000) * 35)/1999) + 50;
-  
-        Y1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
-        Y2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
-        
-            Serial.println(tempkp);
-            Serial.println(tempkd);
-            Serial.println(tempStepSize);
-        
-      }
-      else if (((distanceToGoX() > 0) || (distanceToGoY() > 0)) && distanceToGoY() < 2001)
-      {
-        float tempkp;
-        float tempkd;
-        float tempStepSize;
-        
-      
-        tempkd = (((distanceToGoY() - 2000)*8)/19990) + 1;
-        tempkp = (((distanceToGoY() - 2000)*7)/1999) + 22;
-        tempStepSize =  (((distanceToGoY() - 2000) * 35)/1999) + 50;
-        
-        X1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);                 //Sets the initial value settings for each motor
-        X2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
-        Y1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
-        Y2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
-        
-            Serial.println(tempkp);
-    Serial.println(tempkd);
-    Serial.println(tempStepSize);
-      }
-
-}
+//
+//void adaptValues()
+//{
+//    if(distanceToGoX() > 0 && distanceToGoX() < 2001)
+//    {
+//      float tempkp;
+//      float tempkd;
+//      float tempStepSize;
+//      
+//      tempkd = (((distanceToGoX() - 2000)*8)/19990) + 1;
+//      tempkp = (((distanceToGoX() - 2000)*7)/1999) + 22;
+//      tempStepSize =  (((distanceToGoX() - 2000) * 35)/1999) + 50;
+//      
+//      
+//        X1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);                 //Sets the initial value settings for each motor
+//        X2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
+//        
+//            Serial.println(tempkp);
+//    Serial.println(tempkd);
+//    Serial.println(tempStepSize);
+//
+//    }
+//      else if (distanceToGoY() > 0 && distanceToGoY() < 2001) 
+//      {
+//        float tempkp;
+//        float tempkd;
+//        float tempStepSize;
+//      
+//        tempkd = (((distanceToGoY() - 2000)*8)/19990) + 1;
+//        tempkp = (((distanceToGoY() - 2000)*7)/1999) + 22;
+//        tempStepSize =  (((distanceToGoY() - 2000) * 35)/1999) + 50;
+//  
+//        Y1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
+//        Y2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
+//        
+//            Serial.println(tempkp);
+//            Serial.println(tempkd);
+//            Serial.println(tempStepSize);
+//        
+//      }
+//      else if (((distanceToGoX() > 0) || (distanceToGoY() > 0)) && distanceToGoY() < 2001)
+//      {
+//        float tempkp;
+//        float tempkd;
+//        float tempStepSize;
+//        
+//      
+//        tempkd = (((distanceToGoY() - 2000)*8)/19990) + 1;
+//        tempkp = (((distanceToGoY() - 2000)*7)/1999) + 22;
+//        tempStepSize =  (((distanceToGoY() - 2000) * 35)/1999) + 50;
+//        
+//        X1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);                 //Sets the initial value settings for each motor
+//        X2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
+//        Y1.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
+//        Y2.setVariables(tempkp, tempkd, tempStepSize , pm, pr, vm);
+//        
+//            Serial.println(tempkp);
+//    Serial.println(tempkd);
+//    Serial.println(tempStepSize);
+//      }
+//
+//}
 
 double getMM(int distance){
   //22400 because it takes 4480 counts per revolution and *10 because Derek said so
