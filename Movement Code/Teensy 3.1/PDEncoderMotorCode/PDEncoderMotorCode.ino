@@ -54,8 +54,8 @@ PDEncoderMotor X2(pX2[0], pX2[1], pX2[2]);
 PDEncoderMotor Y1(pY1[0], pY1[1], pY1[2]); 
 PDEncoderMotor Y2(pY2[0], pY2[1], pY2[2]); 
 
-float kp = 17.5;                                                //All of these values are used in the PDEncoder library, kp is the proportional control, kd is the derivative
-float kd = .5;                                                  //Step size is measured in degrees, less accurate with higher values, will increase speed with higher values.
+float kp = 22;                                                //All of these values are used in the PDEncoder library, kp is the proportional control, kd is the derivative
+float kd = .1;                                                  //Step size is measured in degrees, less accurate with higher values, will increase speed with higher values.
 float stepSize = 50;                                          
 float pm = 0;                                                   //These are position values used in the calculate, no values needed to be run (optional for testing purposes)
 float pr = 0;
@@ -63,7 +63,7 @@ float vm = 0;                                                   //Initial veloci
 
 //Kp - Tested 17-14 works ok KD tested 0.09-0.55, works ok
 float kpAllWheel = 16.75;                                       //All of these values are used in the PDEncoder library, kp is the proportional control, kd is the derivative
-float kdAllWheel = 0.55;                                        //Step size is measured in degrees, less accurate with higher values, will increase speed with higher values.
+float kdAllWheel = .1;                                        //Step size is measured in degrees, less accurate with higher values, will increase speed with higher values.
 float stepSizeAllWheel = 40;                                          
 float pmAllWheel = 0;                                           //These are position values used in the calculate, no values needed to be run (optional for testing purposes)
 float prAllWheel = 0;
@@ -84,9 +84,12 @@ boolean allWheelCommand = false;
   
 void setup()
 {
+  //Serial.begin(9600);
+  //Serial.println("Hello");
+  //delay(5000);
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
-  
-
+  //Serial.println("Hello");
+  //delay(5000);
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
 
   Wire.onRequest(sendData);                                      //Whenever the Master (Pi) sends a signal to the Slave (Teensy)
@@ -179,6 +182,7 @@ void loop()
 //that were sent form the master. 
 void receiveEvent (int numBytes)
 {
+    Serial.println(numBytes);
     //When the wire is available, read the four Bytes
     //that were transmitted from the Master.
     while(Wire.available())
@@ -299,10 +303,10 @@ void moveHere()
       //00001111
       //To the last three bytes of the data array, and then shift each one to their appropriate location
       //Result in a distance where the bits in dataReceived[1] are the Most Significant Bits.
-      int distance = ((0x0F & dataReceived[1]) << 8) | ((0x0F & dataReceived[2]) << 4) | (0x0F & dataReceived[3]);
+      int dist = ((0x0F & dataReceived[1]) << 8) | ((0x0F & dataReceived[2]) << 4) | (0x0F & dataReceived[3]);
       
     
-      distance = distance*10;
+      double distance = getMM(dist);
       //Extract the directions by the same process of using a mask on the first byte, and using an AND operation.
       byte directions = dataReceived[0] & 0x0F;
       
@@ -862,4 +866,10 @@ void synchronizeAll()
     analogWrite(pY2[2], (raiseSpeed + abs(difference/synchSpeed)));
     analogWrite(pX2[2], (lowerSpeed));
   } 
+}
+
+double getMM(int distance){
+  //22400 because it takes 4480 counts per revolution and *10 because Derek said so
+  //d = 70.29 mm
+  return (distance*22400)/220.8225476208265667;
 }
