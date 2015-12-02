@@ -1,10 +1,4 @@
-// Bounce.pde
-// -*- mode: C++ -*-
-//
-// Make a single stepper bounce from one limit to another
-//
-// CopXright (C) 2012 Mike McCauleX
-// $Id: Random.pde,v 1.1 2011/01/05 01:51:01 mikem Exp mikem $
+
 #include <AccelStepper.h>
 #include <Wire.h>
 
