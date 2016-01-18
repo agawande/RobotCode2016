@@ -136,6 +136,7 @@ private:
   sendCmd(unsigned int dist, int command){
     if(msgF.checkData(dist) == GOOD){
       i2c_motion.sendData(msgF.buildMessage(command, dist));
+      msgF.updateKey();
     }
   }
 

@@ -105,16 +105,6 @@ private:
     return dataBytes;
   }
 
-  void
-  updateKey()
-  {
-    if(key < KEY_MAX){
-      (key)++;
-    } else{
-      key = KEY_MIN;
-    }
-  }
-
 public:
   unsigned int
   buildMessage(unsigned int command, unsigned int data)
@@ -131,7 +121,6 @@ public:
     std::cout << "command " << commandBytes << endl;
     std::cout << "data " << dataBytes << endl;
 
-    updateKey();
     return headerBytes | commandBytes | dataBytes;
   }
 
@@ -144,6 +133,17 @@ public:
       return BAD;
     }
   }
+
+  void
+  updateKey()
+  {
+    if(key < KEY_MAX){
+      (key)++;
+    } else{
+      key = KEY_MIN;
+    }
+  }
+
 
 private:
   int i;

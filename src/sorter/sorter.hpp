@@ -113,16 +113,11 @@ public:
     sendCmd(D8);
   }
 
-  void
-  dropD9()
-  {
-    sendCmd(D9);
-  }
-
 private:
   void
   sendCmd(int command){
-      i2c_sorter.sendData(msgFmt.buildMessage(command, 0));
+    i2c_sorter.sendData(msgFmt.buildMessage(command, 0));
+    msgFmt.updateKey();
   }
 
 private:
