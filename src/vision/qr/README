@@ -1,0 +1,5 @@
+Proper code for QR code, just in case we need it.
+
+Using ZBAR and OpenCV.
+
+./a.out qrcode2.jpg

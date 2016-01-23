@@ -22,7 +22,7 @@
 
 /*********************************************************************
 *                          PIN LABELS                                *
-*                  Using Broadcom Pin Numbers                        * 
+*                  Using Broadcom Pin Numbers                        *
 *********************************************************************/
 
 #define ID_SD       0
@@ -37,6 +37,7 @@
 #define MOSI_A      10
 #define SCLK_A      11
 #define LASER_CROSS 12   // LASER_CROSS Defined for robot
+#define COURSE_SW   13
 #define TXD         1
 #define RXD         15
 #define PCM_C       18
