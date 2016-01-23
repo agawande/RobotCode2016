@@ -113,6 +113,12 @@ public:
     sendCmd(D8);
   }
 
+  void
+  dropGrabber()
+  {
+
+  }
+
 private:
   void
   sendCmd(int command){

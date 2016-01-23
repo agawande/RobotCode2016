@@ -19,7 +19,8 @@ public:
   IDBlockColor()
     : color(COLOR_UNDEFINED)
     {
-      wiringPiSetupGpio();
+      //Does wiringPiSetupGpio needs to be in main?
+      //wiringPiSetupGpio();
       cameraRaspInit(Camera);
       usleep(RASPICAM_DELAY);
 

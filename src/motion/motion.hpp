@@ -126,7 +126,7 @@ public:
 
 
   void
-  exitTunnel()
+  crossTunnel()
   {
 
   }
