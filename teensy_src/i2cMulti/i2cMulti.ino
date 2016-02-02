@@ -251,8 +251,7 @@ void moveHere()
       //Now use the direction extracted determine how the motors should move
       if (directions == 0x00)
       {
-        Serial.print("  Cage Conveyer 1 On: ");                                       
-        switchMotion(CC1);   //switch the state, if on then off, if off then on
+        Serial.print("  Cage Conveyer 1 On: ");
         digitalWrite(CC1, HIGH);
       }
       else if (directions == 0x01)
@@ -268,62 +267,67 @@ void moveHere()
       else if (directions == 0x03)
       {
         Serial.print("  Cage Conveyer 2 Off: ");
-        switchMotion(CC2, LOW);
+        digitalWrite(CC2, LOW);
       }
       else if (directions == 0x04)
       {
         Serial.print("  Cage Conveyer 3 On: ");
-        switchMotion(CC3, HIGH);
+        digitalWrite(CC3, HIGH);
       }
       else if (directions == 0x05)
       {
         Serial.print("  Cage Conveyer 3 Off: ");
-        switchMotion(CC3, LOW);
+        digitalWrite(CC3, LOW);
       }
       else if (directions == 0x06)
       {
         Serial.print("  Cage Conveyer 4 On: ");
-        switchMotion(CC4, HIGH);
+        digitalWrite(CC4, HIGH);
       }
       else if (directions == 0x07)
       {
         Serial.print("  Cage Conveyer 4 Off: ");
-        switchMotion(CC4, LOW);
+        digitalWrite(CC4, LOW);
       }
       else if (directions == 0x08)
       {
-        Serial.print("  Main Conveyer: ");
-        switchMotion(MainConv);
+        Serial.print("  Main Conveyer On: ");
+        digitalWrite(MainConv, HIGH);
       }
       else if (directions == 0x09)
+      {
+        Serial.print("  Main Conveyer Off: ");
+        digitalWrite(MainConv, LOW);
+      }
+      else if (directions == 0x10)
       {
         Serial.print("  Grabber Conveyer On: ");  
         digitalWrite(GrabberConv, HIGH);
       }
-      else if (directions == 0x10)
+      else if (directions == 0x11)
       {
         Serial.print("  Grabber Conveyer Off: ");
         digitalWrite(GrabberConv, ON);
       }
-      else if (directions == 0x11)
+      else if (directions == 0x12)
       {
         Serial.print("  Clamper Close: ");
         //Test and change
         clamper.moveTo(90);
       }
-      else if (directions == 0x12)
+      else if (directions == 0x13)
       {
         Serial.print("  Clamper Open: ");
         //Test and change
         clamper.moveTo(-90);
       }
-      else if (directions == 0x13)
+      else if (directions == 0x14)
       {
         Serial.print("  Couple ");
         Serial.println("");
         Couple();
       }
-      else if (directions == 0x14)
+      else if (directions == 0x15)
       {
         Serial.print(" DeCouple ");  
         Serial.print(directions);
@@ -401,5 +405,3 @@ void controlCouplingMotors()
     }
   }
 }
-
-
