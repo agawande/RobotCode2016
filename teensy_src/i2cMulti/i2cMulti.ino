@@ -1,17 +1,9 @@
-
-
+#include <AccelStepper.h>
+#include <Wire.h>
 
 #define SLAVE_ADDRESS 0x05
 
 byte dataReceived[] = {0, 0, 0, 0};                             //This array of Bytes is where the incoming data from the Pi will be stored.
-
-
-int state;                                                      //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
-                                                                //are moving, state is written to 1. When the motors reach their destination and the distance to move is 0, state is written to 0,
-                                                                //for a very brief amount of time, (1 milisecond) and in this time, the Pi picks up that the command is completed. Once the Pi sends the 
-                                                                //command to the Teensy 3.1, the Pi will wait in a while(1) loop, repeatedly checking the i2c bus to see if the Teensy has completed its operation.
-                                                                //once the state is 0 for 1 ms, the Pi picks this up, and then sends a completed response to the Main Python program, through shared memory.
-
 
 int numberOfByteReceived = 0;
 
@@ -57,6 +49,8 @@ int GrabberConv = 18;
 int clamperDir = 17;
 int clamperPin = A7;  //Using analog pin - no digital pin left
 
+AccelStepper clamper(1, clamperPin, clamperDir);  // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
+
 //Coupling Motors
 int Coup1 =  14;  //PWM
 int Coup1Dir = A3;
@@ -67,7 +61,11 @@ int Coup2Dir = A2;
 int senseCoup2 = A1;
 
 void setup()
-{  
+{
+  clamper.setMinPulseWidth(1);
+  clamper.setMaxSpeed(11000);
+  clamper.setAcceleration(11000);
+  
   Serial.begin(9600);          //  setup serial
   
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
@@ -119,43 +117,8 @@ void setup()
 
 void loop()
 {
-//    //make State 1
-  state = 1;
-  
-  //Whenever the distance to go reaches zero for both motors
-  //(whenever a previous move had been called, the Accelstepper
-  //library keeps track of the distance to go)
-  //then send out a transmission to the Master signaling that
-  //the current move function is complete
-  if ((stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0 && stepperZ.distanceToGo() == 0) && beenReached == true)
-  {
-     //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
-     //are moving, state is written to 1. When the motors reach their destination and the distance to move is 0, state is written to 0,
-     //for a very brief amount of time, (1 milisecond) and in this time, the Pi picks up that the command is completed. Once the Pi sends the 
-     //command to the Teensy 3.1, the Pi will wait in a while(1) loop, repeatedly checking the i2c bus to see if the Teensy has completed its operation.
-     //once the state is 0 for 1 ms, the Pi picks this up, and then sends a completed response to the Main Python program, through shared memory.
-     state = 0;
-     beenReached = false;
-     //Delay for 1 milisecond to give the Pi enough time to pick up this state (aid in the i2c communication)
-     //Whenever the Pi attempts to read the i2c line from the slave, that sends a request via i2c to the Teensy, when the Teensy receives a request,
-     //the Teensy calls the sendData() functions, as shown from the Wire.onRequest(sendData); function from above. This 1 milisecond delay gives plenty of time for the
-     //Raspberry Pi 2 to pick up that the move operation has been completed.
-     delay(1);
-  }
-  //Return back to state 1
-  state = 1;
-  //The runAll function is repeatedly ran, this function branches out to the rest of the functions
-   //runAll();  
-}
-
-void motorSetup(void)
-{
-   
-}
-
-void runAll()                                                    //The run all functions contains all of the commands to move the motors, update the PD control, and get a new encoder position for each motor
-{
-  
+  //sleep for 1ms to relenquish the processor
+  delay(1);
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -246,11 +209,11 @@ void receiveEvent (int numBytes)
         numberOfByteReceived = 0;
         commandFinished = true;                                              //Command is decoded and ready to be performed, used to keep track of when waiting for a command
     }
-      else
-      {  
-          //Wire.write(state);
-          //Serial.println("Keys or Ordering of Bits to dont match");
-      }   
+    else
+    {  
+        //Wire.write(state);
+        //Serial.println("Keys or Ordering of Bits to dont match");
+    }   
  } 
 
 void moveHere()
@@ -334,19 +297,33 @@ void moveHere()
       }
       else if (directions == 0x09)
       {
-        Serial.print("  Grab Block: ");  
-        Serial.println("");
-        //Need to no how the grabber works exactly before implementing this functions
-        //grabBlock();
+        Serial.print("  Grabber Conveyer On: ");  
+        digitalWrite(GrabberConv, HIGH);
       }
       else if (directions == 0x10)
       {
-        Serial.print("  Couple ");  
-        Serial.print(directions);
+        Serial.print("  Grabber Conveyer Off: ");
+        digitalWrite(GrabberConv, ON);
+      }
+      else if (directions == 0x11)
+      {
+        Serial.print("  Clamper Close: ");
+        //Test and change
+        clamper.moveTo(90);
+      }
+      else if (directions == 0x12)
+      {
+        Serial.print("  Clamper Open: ");
+        //Test and change
+        clamper.moveTo(-90);
+      }
+      else if (directions == 0x13)
+      {
+        Serial.print("  Couple ");
         Serial.println("");
         Couple();
       }
-      else if (directions == 0x11)
+      else if (directions == 0x14)
       {
         Serial.print(" DeCouple ");  
         Serial.print(directions);
@@ -422,5 +399,7 @@ void controlCouplingMotors()
        analogWrite(Coup1, 0);
        analogWrite(Coup2, 0);
     }
-  }  
+  }
 }
+
+
