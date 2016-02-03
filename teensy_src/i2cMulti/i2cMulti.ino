@@ -51,6 +51,11 @@ int clamperPin = A7;  //Using analog pin - no digital pin left
 
 AccelStepper clamper(1, clamperPin, clamperDir);  // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
 
+int sorterGrabberDir = 16;
+int sorterGrabberPin = A6;
+
+AccelStepper sorterGrabber(1, sorterGrabberPin, sorterGrabberDir);
+
 //Coupling Motors
 int Coup1 =  14;  //PWM
 int Coup1Dir = A3;
@@ -179,9 +184,7 @@ void receiveEvent (int numBytes)
           Serial.print(" - ");
           Serial.println(dataReceived[numberOfByteReceived], HEX);
           numberOfByteReceived++;                                                                    //increment the global variable to keep track of the number of the byte being read from the line         
-        }
-      //keep state at 1, can be removed
-      state = 1;
+        }s
    } 
     //Robust Check
     //This huge if statement checks the Keys and Ordering of the 4 Bytes Received, this is explained below in the moveHere function, but basically if they are not in order based on the
@@ -245,131 +248,113 @@ void moveHere()
     
       //Extract the directions by the same process of using a mask on the first byte, and using an AND operation.
       byte directions = dataReceived[0] & 0x0F;
-      
-      Serial.println("Command Decoded:");
-      
-      //Now use the direction extracted determine how the motors should move
-      if (directions == 0x00)
+      byte dir2 = dataReceived[1] & 0x0F;
+      if(dir2 == 0x01)
       {
-        Serial.print("  Cage Conveyer 1 On: ");
-        digitalWrite(CC1, HIGH);
+         Serial.print(" Pick Block");
+         sorterGrabber.moveTo(50);
       }
-      else if (directions == 0x01)
+      else if(dir2 == 0x02)
       {
-        Serial.print("  Cage Conveyer 1 Off: ");
-        digitalWrite(CC1, LOW);
+         Serial.print(" Release Block");
+         sorterGrabber.moveTo(-50);
       }
-      else if (directions == 0x02)
-      {
-        Serial.print("  Cage Conveyer 2 On: ");
-        digitalWrite(CC2, HIGH);
-      }
-      else if (directions == 0x03)
-      {
-        Serial.print("  Cage Conveyer 2 Off: ");
-        digitalWrite(CC2, LOW);
-      }
-      else if (directions == 0x04)
-      {
-        Serial.print("  Cage Conveyer 3 On: ");
-        digitalWrite(CC3, HIGH);
-      }
-      else if (directions == 0x05)
-      {
-        Serial.print("  Cage Conveyer 3 Off: ");
-        digitalWrite(CC3, LOW);
-      }
-      else if (directions == 0x06)
-      {
-        Serial.print("  Cage Conveyer 4 On: ");
-        digitalWrite(CC4, HIGH);
-      }
-      else if (directions == 0x07)
-      {
-        Serial.print("  Cage Conveyer 4 Off: ");
-        digitalWrite(CC4, LOW);
-      }
-      else if (directions == 0x08)
-      {
-        Serial.print("  Main Conveyer On: ");
-        digitalWrite(MainConv, HIGH);
-      }
-      else if (directions == 0x09)
-      {
-        Serial.print("  Main Conveyer Off: ");
-        digitalWrite(MainConv, LOW);
-      }
-      else if (directions == 0x10)
-      {
-        Serial.print("  Grabber Conveyer On: ");  
-        digitalWrite(GrabberConv, HIGH);
-      }
-      else if (directions == 0x11)
-      {
-        Serial.print("  Grabber Conveyer Off: ");
-        digitalWrite(GrabberConv, ON);
-      }
-      else if (directions == 0x12)
-      {
-        Serial.print("  Clamper Close: ");
-        //Test and change
-        clamper.moveTo(90);
-      }
-      else if (directions == 0x13)
-      {
-        Serial.print("  Clamper Open: ");
-        //Test and change
-        clamper.moveTo(-90);
-      }
-      else if (directions == 0x14)
-      {
-        Serial.print("  Couple ");
-        Serial.println("");
-        Couple();
-      }
-      else if (directions == 0x15)
-      {
-        Serial.print(" DeCouple ");  
-        Serial.print(directions);
-        Serial.println("");
-        DeCouple();
-      }
+      //NEED TO UPDATE THE SORTER PI CODE TO HANDLE THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      else if(dir2 == 0x00) {      
+        Serial.println("Command Decoded:");
         
+        //Now use the direction extracted determine how the motors should move
+        if (directions == 0x00)
+        {
+          Serial.print("  Cage Conveyer 1 On: ");
+          digitalWrite(CC1, HIGH);
+        }
+        else if (directions == 0x01)
+        {
+          Serial.print("  Cage Conveyer 1 Off: ");
+          digitalWrite(CC1, LOW);
+        }
+        else if (directions == 0x02)
+        {
+          Serial.print("  Cage Conveyer 2 On: ");
+          digitalWrite(CC2, HIGH);
+        }
+        else if (directions == 0x03)
+        {
+          Serial.print("  Cage Conveyer 2 Off: ");
+          digitalWrite(CC2, LOW);
+        }
+        else if (directions == 0x04)
+        {
+          Serial.print("  Cage Conveyer 3 On: ");
+          digitalWrite(CC3, HIGH);
+        }
+        else if (directions == 0x05)
+        {
+          Serial.print("  Cage Conveyer 3 Off: ");
+          digitalWrite(CC3, LOW);
+        }
+        else if (directions == 0x06)
+        {
+          Serial.print("  Cage Conveyer 4 On: ");
+          digitalWrite(CC4, HIGH);
+        }
+        else if (directions == 0x07)
+        {
+          Serial.print("  Cage Conveyer 4 Off: ");
+          digitalWrite(CC4, LOW);
+        }
+        else if (directions == 0x08)
+        {
+          Serial.print("  Main Conveyer On: ");
+          digitalWrite(MainConv, HIGH);
+        }
+        else if (directions == 0x09)
+        {
+          Serial.print("  Main Conveyer Off: ");
+          digitalWrite(MainConv, LOW);
+        }
+        else if (directions == 0x10)
+        {
+          Serial.print("  Grabber Conveyer On: ");  
+          digitalWrite(GrabberConv, HIGH);
+        }
+        else if (directions == 0x11)
+        {
+          Serial.print("  Grabber Conveyer Off: ");
+          digitalWrite(GrabberConv, ON);
+        }
+        else if (directions == 0x12)
+        {
+          Serial.print("  Clamper Close: ");
+          //Test and change
+          clamper.moveTo(90);
+        }
+        else if (directions == 0x13)
+        {
+          Serial.print("  Clamper Open: ");
+          //Test and change
+          clamper.moveTo(-90);
+        }
+        else if (directions == 0x14)
+        {
+          Serial.print("  Couple ");
+          Serial.println("");
+          Couple();
+        }
+        else if (directions == 0x15)
+        {
+          Serial.print(" DeCouple ");  
+          Serial.print(directions);
+          Serial.println("");
+          DeCouple();
+        }
+      }  
       Serial.println(" ");
       Serial.println(" ????????????????????????????????????");
       Serial.println(" ? Waiting for completed command... ?");
       Serial.println(" ????????????????????????????????????");
       Serial.println(" ");
-}
- 
-
-void sendData()
-{  
-  //writes a 0 to the i2c bus
-   Wire.write(state);
-   //Cosmetic printing, the state 0 should be active for around 1 milisecond, so print the beginning for a new command cosmeticly
-   if (state == 0 && commandFinished)
-   {
-       Serial.println("Completed Command!");
-       Serial.println("  -----------------------------");
-       Serial.print(" | Current X Coordinate ");
-       Serial.print(stepperX.currentPosition());
-       Serial.println(" ");
-       Serial.print(" | Current Y Coordinate ");
-       Serial.print(stepperY.currentPosition());
-       Serial.println(" ");
-       Serial.println("  -----------------------------");
-       Serial.println("||||||||||||||||||||||||||||||||||||||||||||");
-       Serial.println(" ");
-
-       commandFinished = false;                                   //Reset these back to false, until a new command is received and decoded   
-   }
-   
-   //reset the numberOfByteReceived to 0, so that the bytes can remain in order.
-   if (numberOfByteReceived == 4)
-   {
-      numberOfByteReceived = 0;
-   }    
 }
 
 void Couple()
