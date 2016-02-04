@@ -2,6 +2,7 @@
 #include "../communication/message_formatter.hpp"
 #include "../motion/motion.hpp"
 #include "../sorter/sorter.hpp"
+#include "../multi/multi_util.hpp"
 
 #include "../vision/color/id_block_color.hpp"
 #include "../vision/color/gpio.h"
@@ -36,6 +37,7 @@ int main()
   //Lift lift;
   //Grabber grabber;
   //Conveyer conveyer;
+  MultiUtil multi;
 
   IDBlockColor idBlockColor;
 
@@ -55,6 +57,8 @@ int main()
 
   //Drop the grabber once we are out of the tunnel
   sorter.dropGrabber();
+
+  multi.deClampGrabber();
 
   //Get the distance from front
   //double distFromFront = laser.distanceFromFront();
@@ -77,22 +81,81 @@ int main()
   return 0;
 }
 
+void grabSet()
+{
+
+}
+
+void storeBlock()
+{
+  string color = idBlockColor.readColor();
+
+  //Go above the block
+  sorter.goToPickUp();
+  //actually grab the block
+  multi.sorterPickUp();
+  sorter.goTo(color, digitalRead(LSW_MIDDLE));
+  multi.sorterDrop();
+}
+
+
 void takeInBargeB()
 {
   lift.toHeightB();
-  grabber.grabSet();  //grab two columns
+  grabSet();  //grab two columns
 
-  while(LSW_CORNER == OFF) {
-    conveyer.run();    //if it is already running, this method won't do anything
+  while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
+    multi.startMainConveyer();    //if it is already running?
   }
-  conveyer.stop();
+  multi.stopMainConveyer();
 
-  string color = idBlockColor.readColor();
-  sorter.pickUp();
-  if (LSW_MIDDLE == OFF) {
-    sorter.drop(color);
+  storeBlock();
+
+  if (digitalRead(LSW_MIDDLE) == ON) {
+    //A small block was picked up, 3 blocks left or 1 small block and 1 large block left
+    while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_CORNER) == OFF) {
+      multi.startMainConveyer();
+    }
+    multi.stopMainConveyer();
+
+    storeBlock();
+
+    while(digitalRead(LSW_CORNER) == OFF) {
+      multi.startMainConveyer();
+    }
+    multi.stopMainConveyer();
+
+    storeBlock();
+
+    if (digitalRead(LSW_MIDDLE) == ON) {
+       //1 small block left, else nothing left
+       while(digitalRead(LSW_CORNER) == OFF) {
+         multi.startMainConveyer();
+       }
+       multi.stopMainConveyer();
+
+       storeBlock();
+    }
+
   } else {
-    sorter.drop(color);
+    //A large block was picked up
+    // Now either two small blocks are left or 1 big block
+    while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
+      multi.startMainConveyer();    //if it is already running?
+    }
+    multi.stopMainConveyer();
+
+    storeBlock();
+
+    if (digitalRead(LSW_MIDDLE) == ON) {
+       //1 small block left, else nothing left
+       while(digitalRead(LSW_CORNER) == OFF) {
+         multi.startMainConveyer();
+       }
+       multi.stopMainConveyer();
+
+       storeBlock();
+    }
   }
 }
 

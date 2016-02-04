@@ -24,8 +24,8 @@ int const MULTI_ADDRESS = 0x05;
 #define DECOUPLE              15
 
 //Using distance for extra commands
-#define SORTER_GRABBER_CLOSE  0
-#define SORTER_GRABBER_OPEN   1
+#define SORTER_GRABBER_PICK  1
+#define SORTER_GRABBER_DROP  2
 
 class MultiUtil
 {
@@ -36,15 +36,69 @@ public:
     {
     }
 
-//private, public for now for testing
   void
-  sendCmd(unsigned int dist, int command){
+  startMainConveyer()
+  {
+    sendCmd(MAIN_CONVEYER_ON);
+  }
+
+  void
+  stopMainConveyer()
+  {
+    sendCmd(MAIN_CONVEYER_OFF);
+  }
+
+  void
+  sorterPickUp()
+  {
+    sendDistCmd(SORTER_GRABBER_PICK);
+  }
+
+  void
+  sorterDrop()
+  {
+    sendDistCmd(SORTER_GRABBER_DROP);
+  }
+
+  void
+  startGrabberConveyer()
+  {
+    sendCmd(GRABBER_CONVEYER_ON);
+  }
+
+  void
+  stopGrabberConveyer()
+  {
+    sendCmd(GRABBER_CONVEYER_OFF);
+  }
+
+  void
+  clampGrabber()
+  {
+    sendCmd(CLAMPER_CLOSE);
+  }
+
+  void
+  deClampGrabber()
+  {
+    sendCmd(CLAMPER_OPEN);
+  }
+
+private:
+  void
+  sendDistCmd(unsigned int dist){
     if(msgF.checkData(dist) == GOOD){
-      if( dist==0 || dist == 1 || dist == 2) {
+      if(dist == 1 || dist == 2) {
         i2c_motion.sendData(msgF.buildMessage(command, dist));
         msgF.updateKey();
       }
     }
+  }
+
+  void
+  sendCmd(int command){
+    i2c_sorter.sendData(msgFmt.buildMessage(command, 0));
+    msgFmt.updateKey();
   }
 
 private:

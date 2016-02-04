@@ -55,57 +55,113 @@ public:
     sorterState = 1;
   }
 
+  void goTo(string color, int lsw_middle)
+  {
+    switch(lsw_middle)
+    {
+      case 0:
+      case 1:
+    }
+  }
 
   void
-  pickUp()
+  goToSmallBlue()
+  {
+    goToD1();
+  }
+
+  void
+  goToSmallGreen()
+  {
+    goToD2();
+  }
+
+  void
+  goToSmallYellow()
+  {
+    goToD3();
+  }
+
+  void
+  goToSmallRed()
+  {
+    goToD4();
+  }
+
+  void
+  goToBigBlue()
+  {
+    goToD5();
+  }
+
+  void
+  goToBigGreen()
+  {
+    goToD6();
+  }
+
+  void
+  goToBigYellow()
+  {
+    goToD7();
+  }
+
+  void
+  goToBigRed()
+  {
+    goToD8();
+  }
+
+  void
+  goToPickUp()
   {
     sendCmd(PICKUP);
   }
 
   void
-  dropD1()
+  goToD1()
   {
     sendCmd(D1);
   }
 
   void
-  dropD2()
+  goToD2()
   {
     sendCmd(D2);
   }
 
   void
-  dropD3()
+  goToD3()
   {
     sendCmd(D3);
   }
 
   void
-  dropD4()
+  goToD4()
   {
     sendCmd(D4);
   }
 
   void
-  dropD5()
+  goToD5()
   {
     sendCmd(D5);
   }
 
   void
-  dropD6()
+  goToD6()
   {
     sendCmd(D6);
   }
 
   void
-  dropD7()
+  goToD7()
   {
     sendCmd(D7);
   }
 
   void
-  dropD8()
+  goToD8()
   {
     sendCmd(D8);
   }
@@ -116,7 +172,6 @@ public:
 
   }
 
-private:
   void
   sendCmd(int command){
     i2c_sorter.sendData(msgFmt.buildMessage(command, 0));
