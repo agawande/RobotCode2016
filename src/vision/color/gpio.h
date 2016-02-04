@@ -37,7 +37,10 @@
 #define MOSI_A      10
 #define SCLK_A      11
 #define LASER_CROSS 12   // LASER_CROSS Defined for robot
-#define COURSE_SW   13
+#define GO_SWITCH   13
+#define COURSE_SW   16
+#define LSW_CORNER  17
+#define LSW_MIDDLE  22
 #define TXD         1
 #define RXD         15
 #define PCM_C       18
@@ -98,10 +101,6 @@ void gpioInit(void)
 
     */
 
-   // pinMode(13, INPUT);
-   // pinMode(16, INPUT);
-   // pinMode(17, INPUT);
-   // pinMode(22, INPUT);
    // pinMode(23, INPUT);
    // pinMode(24, INPUT);
    // pinMode(25, INPUT);

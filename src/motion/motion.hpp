@@ -1,6 +1,3 @@
-#include "../communication/i2c_setup.hpp"
-#include "../communication/message_formatter.hpp"
-
 using namespace std;
 
 int const MOTION_ADDRESS = 0x04;

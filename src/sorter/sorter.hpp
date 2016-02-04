@@ -1,6 +1,3 @@
-#include "../communication/i2c_setup.hpp"
-#include "../communication/message_formatter.hpp"
-
 using namespace std;
 
 int const SORTER_ADDRESS = 0x03;
