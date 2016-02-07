@@ -31,7 +31,7 @@ class MultiUtil
 {
 public:
   MultiUtil()
-    : i2c_sorter(MULTI_ADDRESS)
+    : i2c_multi(MULTI_ADDRESS)
     , msgFmt()
     {
     }
@@ -84,24 +84,72 @@ public:
     sendCmd(CLAMPER_OPEN);
   }
 
+  void
+  startConveyerI()
+  {
+    sendCmd(CAGE_CONVEYER_1_ON);
+  }
+
+  void
+  stopConveyerI()
+  {
+    sendCmd(CAGE_CONVEYER_1_OFF);
+  }
+
+  void
+  startConveyerII()
+  {
+    sendCmd(CAGE_CONVEYER_2_ON);
+  }
+
+  void
+  stopConveyerII()
+  {
+    sendCmd(CAGE_CONVEYER_2_OFF);
+  }
+
+  void
+  startConveyerIII()
+  {
+    sendCmd(CAGE_CONVEYER_3_ON);
+  }
+
+  void
+  stopConveyerIII()
+  {
+    sendCmd(CAGE_CONVEYER_3_OFF);
+  }
+
+  void
+  startConveyerIV()
+  {
+    sendCmd(CAGE_CONVEYER_4_ON);
+  }
+
+  void
+  stopConveyerIV()
+  {
+    sendCmd(CAGE_CONVEYER_4_OFF);
+  }
+
 private:
   void
   sendDistCmd(unsigned int dist){
-    if(msgF.checkData(dist) == GOOD){
+    if(msgFmt.checkData(dist) == GOOD){
       if(dist == 1 || dist == 2) {
-        i2c_motion.sendData(msgF.buildMessage(command, dist));
-        msgF.updateKey();
+        i2c_multi.sendData(msgFmt.buildMessage(0, dist));
+        msgFmt.updateKey();
       }
     }
   }
 
   void
   sendCmd(int command){
-    i2c_sorter.sendData(msgFmt.buildMessage(command, 0));
+    i2c_multi.sendData(msgFmt.buildMessage(command, 0));
     msgFmt.updateKey();
   }
 
 private:
-  I2CSetup i2c_sorter;
+  I2CSetup i2c_multi;
   MessageFormatter msgFmt;
 };
