@@ -373,9 +373,42 @@ void moveHere()
           Serial.print(directions);
           Serial.println("");
           pickUpBlock();
+        }
+        else if (directions == 0x10)
+        {
+          Serial.print("  Sort position: ");  
+          Serial.print(directions);
+          Serial.println("");
           
         }
-        
+        else if (directions == 0x11)
+        {
+          Serial.print("  5 inch: ");  
+          Serial.print(directions);
+          Serial.println("");
+          
+        }
+        else if (directions == 0x12)
+        {
+          Serial.print("  7 inch: ");  
+          Serial.print(directions);
+          Serial.println("");
+          
+        }
+        else if (directions == 0x13)
+        {
+          Serial.print("  10 inch: ");  
+          Serial.print(directions);
+          Serial.println("");
+          
+        }
+        else if (directions == 0x14)
+        {
+          Serial.print("  Coupling position: ");  
+          Serial.print(directions);
+          Serial.println("");
+          
+        }
         Serial.println(" ");
         Serial.println(" ????????????????????????????????????");
         Serial.println(" ? Waiting for completed command... ?");

@@ -67,7 +67,7 @@ int senseCoup2 = A1;
 
 void setup()
 {
-  clamper.setMinPulseWidth(1);
+  //clamper.setMinPulseWidth(1);
   clamper.setMaxSpeed(11000);
   clamper.setAcceleration(11000);
   
@@ -75,7 +75,7 @@ void setup()
   
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
-  Wire.onRequest(sendData);
+  //Wire.onRequest(sendData);
 
   pinMode(C1D1, OUTPUT);
   pinMode(C1D2, OUTPUT);
@@ -92,11 +92,11 @@ void setup()
   pinMode(clamperDir, OUTPUT);
   pinMode(clamperPin, OUTPUT);
 
-  pinMode(Coup1. OUTPUT);
+  pinMode(Coup1, OUTPUT);
   pinMode(Coup1Dir, OUTPUT);
   pinMode(senseCoup1, INPUT);
 
-  pinMode(Coup2. OUTPUT);
+  pinMode(Coup2, OUTPUT);
   pinMode(Coup2Dir, OUTPUT);
   pinMode(senseCoup2, INPUT);
 
@@ -113,6 +113,8 @@ void setup()
   digitalWrite(C2D1, HIGH);
   digitalWrite(C2D2, LOW);
   digitalWrite(C3D1, HIGH);
+  digitalWrite(C3D2, LOW);
+  digitalWrite(C4D1, HIGH);
   digitalWrite(C4D2, LOW);
   digitalWrite(MainConvD1, HIGH);
   digitalWrite(MainConvD2, LOW);
@@ -124,6 +126,9 @@ void loop()
 {
   //sleep for 1ms to relenquish the processor
   delay(1);
+  Serial.println(analogRead(senseCoup1));
+  Serial.println(analogRead(senseCoup2));
+  DeCouple();
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -184,7 +189,7 @@ void receiveEvent (int numBytes)
           Serial.print(" - ");
           Serial.println(dataReceived[numberOfByteReceived], HEX);
           numberOfByteReceived++;                                                                    //increment the global variable to keep track of the number of the byte being read from the line         
-        }s
+        }
    } 
     //Robust Check
     //This huge if statement checks the Keys and Ordering of the 4 Bytes Received, this is explained below in the moveHere function, but basically if they are not in order based on the
@@ -210,7 +215,7 @@ void receiveEvent (int numBytes)
         dataReceived[2] = 0;
         dataReceived[3] = 0;
         numberOfByteReceived = 0;
-        commandFinished = true;                                              //Command is decoded and ready to be performed, used to keep track of when waiting for a command
+        //commandFinished = true;                                              //Command is decoded and ready to be performed, used to keep track of when waiting for a command
     }
     else
     {  
@@ -322,7 +327,7 @@ void moveHere()
         else if (directions == 0x11)
         {
           Serial.print("  Grabber Conveyer Off: ");
-          digitalWrite(GrabberConv, ON);
+          digitalWrite(GrabberConv, HIGH);
         }
         else if (directions == 0x12)
         {
@@ -383,8 +388,10 @@ void controlCouplingMotors()
   while(1){
     int sensorValue1 = analogRead(senseCoup1);
     int sensorValue2 = analogRead(senseCoup2);
+    
     //Randomly just 1
-    if(sensorValue1 > 1 && sensorValue2 > 1){
+    if(sensorValue1 > 500 && sensorValue2 > 500){
+      Serial.println("Motor Off");
        analogWrite(Coup1, 0);
        analogWrite(Coup2, 0);
     }
