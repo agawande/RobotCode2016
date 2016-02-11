@@ -23,13 +23,13 @@ int numberOfByteReceived = 0;                                   //This keeps tra
 
 
 //X1 (DirB, DirA, PWM, ENC B, ENC A), to get X Axis in same direction.
-DCMotorServo X1 = DCMotorServo(22, 21, 20, 15, 14);
+DCMotorServo X1 = DCMotorServo(21, 22, 20, 14, 15);
 //X2 (DirA, DirB, PWM, ENC A, ENC B), can stay default
-DCMotorServo X2 = DCMotorServo(7, 6, 9, 10, 8);
+DCMotorServo X2 = DCMotorServo(6, 7, 9, 8, 10);
 //Y1 (DirB, DirA, PWM, ENC B, ENC A), to get Y Axis in same direction.
-DCMotorServo Y1 = DCMotorServo(2, 4, 5, 11, 12);
+DCMotorServo Y1 = DCMotorServo(2, 4, 5, 12, 11);
 //Y2 (DirA, DirB, PWM, ENC A, ENC B), can stay default
-DCMotorServo Y2 = DCMotorServo(1, 0, 3, 16, 17);
+DCMotorServo Y2 = DCMotorServo(1, 0, 3, 17, 16);
 int counter = 0;
 
 long normalizeX1, normalizeX2, normalizeY1, normalizeY2;       
@@ -88,12 +88,12 @@ void loop()
 //  //Serial.println(Y1.getActualPosition());
 //  //Serial.println(Y2.getActualPosition());
 
-  if ((X1.distanceToGo() < 400) && (X2.distanceToGo() < 400) && (Y1.distanceToGo() < 400) && (Y2.distanceToGo() < 400))
+  if ((X1.distanceToGo() < 500) && (X2.distanceToGo() < 500) && (Y1.distanceToGo() < 500) && (Y2.distanceToGo() < 500))
   {
-      X1.myPID->SetTunings(0.15,0.2,0.22);
-      X2.myPID->SetTunings(0.15,0.2,0.22);
-      Y1.myPID->SetTunings(0.15,0.2,0.22); 
-      Y2.myPID->SetTunings(0.15,0.2,0.22);
+      X1.myPID->SetTunings(0.15,0.2,0.24);
+      X2.myPID->SetTunings(0.15,0.2,0.24);
+      Y1.myPID->SetTunings(0.15,0.2,0.24); 
+      Y2.myPID->SetTunings(0.15,0.2,0.24);
   }
   else
   {
@@ -101,7 +101,6 @@ void loop()
       X2.myPID->SetTunings(0.1,0.15,0.1);
       Y1.myPID->SetTunings(0.1,0.15,0.1); 
       Y2.myPID->SetTunings(0.1,0.15,0.1);
-    
   }
   synchronizeTwo(X1, X2);
   synchronizeTwo(Y2, Y1);
@@ -197,7 +196,7 @@ void loop()
 
 void receiveEvent (int numBytes)
 {
-    Serial.println(numBytes);
+    Serial.println("Received" + numBytes);
     //When the wire is available, read the four Bytes
     //that were transmitted from the Master.
     while(Wire.available())
