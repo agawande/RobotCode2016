@@ -39,10 +39,14 @@ void setup()
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
   Wire.onRequest(sendData); 
+  //stepperZ.moveTo(1000);
 }
 
 void loop()
 {
+  //digitalWriteFast(22, HIGH);
+    //if (stepperZ.distanceToGo() == 0)
+     // stepperZ.moveTo(-stepperZ.currentPosition());
 //  if (stop == true)
 //  {
 //  deposit1();
@@ -87,6 +91,7 @@ void loop()
   //the current move function is complete
   if ((stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0 && stepperZ.distanceToGo() == 0) && beenReached == true)
   {
+    Serial.println("Completed command");
      //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
      //are moving, state is written to 1. When the motors reach their destination and the distance to move is 0, state is written to 0,
      //for a very brief amount of time, (1 milisecond) and in this time, the Pi picks up that the command is completed. Once the Pi sends the 
@@ -103,7 +108,7 @@ void loop()
   //Return back to state 1
   state = 1;
   //The runAll function is repeatedly ran, this function branches out to the rest of the functions
-   //runAll();  
+   runAll();  
 }
 
 void motorSetup(void)
@@ -156,8 +161,8 @@ void motorSetup(void)
   //Sleep Pin for Z
   digitalWriteFast(22, LOW);
     
-  stepperZ.setMaxSpeed(80000);
-  stepperZ.setAcceleration(100000); 
+  stepperZ.setMaxSpeed(8000);
+  stepperZ.setAcceleration(10000); 
 }
 
 void runAll()                                                    //The run all functions contains all of the commands to move the motors, update the PD control, and get a new encoder position for each motor
@@ -293,7 +298,7 @@ void moveHere()
       byte directions = dataReceived[0] & 0x0F;
       
       Serial.println("Command Decoded:");
-      
+      Serial.print(directions, HEX);
       //Now use the direction extracted determine how the motors should move
       //Home Position: 0x00 -> xxxx0000 
       if (directions == 0x00)
@@ -364,7 +369,20 @@ void moveHere()
           Serial.print("  Move Drop off 8: ");  
           Serial.print(directions);
           Serial.println("");
-          deposit8();
+          //deposit8();
+          
+           digitalWriteFast(22, HIGH);
+           stepperZ.move(1000);
+           while(true)
+           {
+             if (stepperZ.distanceToGo() == 0)
+             {
+                break;
+             }
+             runAll();
+           }
+            digitalWriteFast(22, LOW);
+            beenReached = true;
         }
         //Deposit 5: 0x09 -> xxxx1001
         else if (directions == 0x09)
@@ -374,28 +392,28 @@ void moveHere()
           Serial.println("");
           pickUpBlock();
         }
-        else if (directions == 0x10)
+        else if (directions == 10)
         {
           Serial.print("  Sort position: ");  
           Serial.print(directions);
           Serial.println("");
           
         }
-        else if (directions == 0x11)
+        else if (directions == 11)
         {
           Serial.print("  5 inch: ");  
           Serial.print(directions);
           Serial.println("");
-          
+          //stepperZ.moveTo(50);
         }
-        else if (directions == 0x12)
+        else if (directions == 12)
         {
           Serial.print("  7 inch: ");  
           Serial.print(directions);
           Serial.println("");
           
         }
-        else if (directions == 0x13)
+        else if (directions == 13)
         {
           Serial.print("  10 inch: ");  
           Serial.print(directions);

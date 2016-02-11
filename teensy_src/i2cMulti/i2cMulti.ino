@@ -319,35 +319,35 @@ void moveHere()
           Serial.print("  Main Conveyer Off: ");
           digitalWrite(MainConv, LOW);
         }
-        else if (directions == 0x10)
+        else if (directions == 11)
         {
           Serial.print("  Grabber Conveyer On: ");  
           digitalWrite(GrabberConv, HIGH);
         }
-        else if (directions == 0x11)
+        else if (directions == 11)
         {
           Serial.print("  Grabber Conveyer Off: ");
           digitalWrite(GrabberConv, HIGH);
         }
-        else if (directions == 0x12)
+        else if (directions == 12)
         {
           Serial.print("  Clamper Close: ");
           //Test and change
           clamper.moveTo(90);
         }
-        else if (directions == 0x13)
+        else if (directions == 13)
         {
           Serial.print("  Clamper Open: ");
           //Test and change
           clamper.moveTo(-90);
         }
-        else if (directions == 0x14)
+        else if (directions == 14)
         {
           Serial.print("  Couple ");
           Serial.println("");
           Couple();
         }
-        else if (directions == 0x15)
+        else if (directions == 15)
         {
           Serial.print(" DeCouple ");  
           Serial.print(directions);
