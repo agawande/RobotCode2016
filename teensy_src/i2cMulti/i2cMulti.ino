@@ -65,8 +65,13 @@ int Coup2 = 15;
 int Coup2Dir = A2;
 int senseCoup2 = A1;
 
+boolean isCoupled = false;
+
 void setup()
 {
+  sorterGrabber.setMinPulseWidth(1);
+  sorterGrabber.setMaxSpeed(2000);
+  sorterGrabber.setAcceleration(10000);
   //clamper.setMinPulseWidth(1);
   clamper.setMaxSpeed(11000);
   clamper.setAcceleration(11000);
@@ -199,14 +204,7 @@ void receiveEvent (int numBytes)
         Serial.println(" ~Keys and Ordering match!~");
         Serial.println("******************");
         Serial.println(" ");
-        Serial.println("Initiating Move...");
-        Serial.println("  -----------------------------");
-        Serial.print(" | Current X Coordinate ");
-        //Serial.print(X1.getGAbsolute());
-        Serial.println("  ");
-        Serial.print(" | Current Y Coordinate ");
-        //Serial.print(Y2.getGAbsolute());
-        Serial.println("  ");
+        Serial.println("Initiating Command...");
         Serial.println("  -----------------------------");
          
         moveHere();
@@ -257,17 +255,24 @@ void moveHere()
       if(dir2 == 0x01)
       {
          Serial.print(" Pick Block");
-         sorterGrabber.moveTo(50);
+         sorterGrabber.moveTo(-110);
+         while (sorterGrabber.distanceToGo() > 0)
+         {
+              sorterGrabber.run(); 
+         }
       }
       else if(dir2 == 0x02)
       {
          Serial.print(" Release Block");
-         sorterGrabber.moveTo(-50);
+         sorterGrabber.moveTo(110);
+         while (sorterGrabber.distanceToGo() > 0)
+         {
+              sorterGrabber.run(); 
+         }
       }
       //NEED TO UPDATE THE SORTER PI CODE TO HANDLE THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       else if(dir2 == 0x00) {      
         Serial.println("Command Decoded:");
-        
         //Now use the direction extracted determine how the motors should move
         if (directions == 0x00)
         {
@@ -369,6 +374,8 @@ void Couple()
   digitalWrite(Coup2Dir, LOW);
 
   controlCouplingMotors(); 
+  
+    isCoupled = true;
 }
 
 void DeCouple()
@@ -377,6 +384,8 @@ void DeCouple()
   digitalWrite(Coup2Dir, HIGH);
 
   controlCouplingMotors();
+  
+  isCoupled = false;
 }
 
 void controlCouplingMotors()
@@ -385,15 +394,20 @@ void controlCouplingMotors()
   analogWrite(Coup2, 255);
   
   //Prelimnary code for coupler
+  int start = millis();
+  int end = 0;
+
   while(1){
     int sensorValue1 = analogRead(senseCoup1);
     int sensorValue2 = analogRead(senseCoup2);
-    
+      Serial.println(analogRead(senseCoup1));
+      Serial.println(analogRead(senseCoup2));
+      end = millis() - start;
     //Randomly just 1
-    if(sensorValue1 > 500 && sensorValue2 > 500){
+    if((sensorValue1 > 52 && sensorValue2 > 52) ||  end > 400){
       Serial.println("Motor Off");
        analogWrite(Coup1, 0);
        analogWrite(Coup2, 0);
+       break;
     }
-  }
 }
