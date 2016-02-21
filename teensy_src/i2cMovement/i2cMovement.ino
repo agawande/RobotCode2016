@@ -1,8 +1,8 @@
 //Include Encoder and PID_v1 to enable DCMotorServo's usage of them.
 //(see: http://stackoverflow.com/questions/6504211/is-it-possible-to-include-a-library-from-another-library-using-the-arduino-ide)
 #include <Encoder.h>
-#include <PID_v1.h>
-#include <DCMotorServo.h>
+#include "PID_v1.h"
+#include "DCMotorServo.h"
 #include <Wire.h>
 
 //Set the Address for the Slave (Teensy 3.1)
@@ -21,6 +21,8 @@ int state;                                                      //This variable 
 int numberOfByteReceived = 0;                                   //This keeps track of the number order of the Byte that has been collected for i2c (since i2c sends only one byte at a time), so that the bytes will remaining in 
                                                                 //a consistent order coming from the received transmission from the Pi
 
+//(2*pi/360)*6*2.54 mm
+const float ANGLE_CONVER = 2.65988;
 
 //X1 (DirB, DirA, PWM, ENC B, ENC A), to get X Axis in same direction.
 DCMotorServo X1 = DCMotorServo(21, 22, 20, 14, 15);
@@ -185,6 +187,7 @@ void loop()
 //          counter = 0;
 //        }
 
+  //delay(1);
     //Return back to state 1
     state = 1;
     
@@ -375,6 +378,7 @@ void moveHere()
           Serial.print("  Clockwise Spin: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
+          distance = ANGLE_CONVER*dist;
           Serial.print(distance);
           Serial.println("");
           spin(distance);
@@ -385,6 +389,7 @@ void moveHere()
           Serial.print("  Anti-Clockwise Spin: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
+          distance = ANGLE_CONVER*dist;
           Serial.print(distance);
           Serial.println("");
           spin(-distance);
