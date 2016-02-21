@@ -23,6 +23,7 @@ int numberOfByteReceived = 0;                                   //This keeps tra
 
 //(2*pi/360)*6*2.54 mm
 const float ANGLE_CONVER = 2.65988;
+int whichSync;
 
 //X1 (DirB, DirA, PWM, ENC B, ENC A), to get X Axis in same direction.
 DCMotorServo X1 = DCMotorServo(21, 22, 20, 14, 15);
@@ -94,20 +95,30 @@ void loop()
   {
       X1.myPID->SetTunings(0.15,0.2,0.24);
       X2.myPID->SetTunings(0.15,0.2,0.24);
-      Y1.myPID->SetTunings(0.15,0.2,0.24); 
+      Y1.myPID->SetTunings(0.15,0.2,0.24);
       Y2.myPID->SetTunings(0.15,0.2,0.24);
   }
   else
   {
-      X1.myPID->SetTunings(0.1,0.15,0.1);
-      X2.myPID->SetTunings(0.1,0.15,0.1);
-      Y1.myPID->SetTunings(0.1,0.15,0.1); 
-      Y2.myPID->SetTunings(0.1,0.15,0.1);
+      X1.myPID->SetTunings(0.1,0.15,0.05);
+      X2.myPID->SetTunings(0.1,0.15,0.05);
+      Y1.myPID->SetTunings(0.1,0.15,0.05);
+      Y2.myPID->SetTunings(0.1,0.15,0.05);
   }
-  synchronizeTwo(X1, X2);
-  synchronizeTwo(Y2, Y1);
-  //synchronizeTwo(X2, Y2);
-  //synchronizeTwo(Y1, X1);
+
+  if (whichSync == 0)
+  {
+    synchronizeTwo(X1, X2);
+  }
+  else if (whichSync == 1)
+  {
+    synchronizeTwo(Y2, Y1);
+  }
+  else
+  {
+    synchronizeTwo(X2, Y2);
+    synchronizeTwo(Y1, X1);
+  }
 
     
   //Whenever the distance to go reaches zero for both motors
@@ -334,6 +345,7 @@ void moveHere()
       //Forward: 0x00 -> xxxx0000 
       if (directions == 0x00)
       {
+        whichSync = 1;
         Serial.print("  Move North: "); 
         Serial.print(directions);
         Serial.print(" Distance: ");
@@ -345,6 +357,7 @@ void moveHere()
       // Reverse: 0x01 -> xxxx0001 
         else if (directions == 0x01)
         {
+          whichSync = 1;
           Serial.print("  Move South: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
@@ -355,6 +368,7 @@ void moveHere()
        // Move Left: 0x02 -> xxxx0010
         else if (directions == 0x02)
         {
+          whichSync = 0;
           Serial.print("  Move West: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
@@ -365,6 +379,7 @@ void moveHere()
        // Move Right: 0x03 -> xxxx0011
         else if (directions == 0x03)
         {
+          whichSync = 0;
           Serial.print("  Move East: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
@@ -375,10 +390,11 @@ void moveHere()
         // Clockwise spin: 0x04 -> xxxx0100 
         else if (directions == 0x04)
         {
+          whichSync = 2;
           Serial.print("  Clockwise Spin: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
-          distance = ANGLE_CONVER*dist;
+          distance = getMM(ANGLE_CONVER*dist);
           Serial.print(distance);
           Serial.println("");
           spin(distance);
@@ -386,10 +402,11 @@ void moveHere()
         // Anti Clockwise spin: 0x05 -> xxxx0101 
         else if (directions == 0x05)
         {
+          whichSync = 2;
           Serial.print("  Anti-Clockwise Spin: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
-          distance = ANGLE_CONVER*dist;
+          distance = getMM(ANGLE_CONVER*dist);
           Serial.print(distance);
           Serial.println("");
           spin(-distance);
@@ -397,6 +414,7 @@ void moveHere()
         // Move Quadrant 1: 0x06 -> xxxx0110
         else if (directions == 0x06)
         {
+          whichSync = 2;
           Serial.print("  Quadrant I Movement: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
@@ -407,6 +425,7 @@ void moveHere()
         // Move Quadrant II: 0x07 -> xxxx0111
         else if (directions == 0x07)
         {
+          whichSync = 2;
           Serial.print("  Quadrant II Movement: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
@@ -417,6 +436,7 @@ void moveHere()
         // Move Quadrant III: 0x08 -> xxxx1000
         else if (directions == 0x08)
         {
+          whichSync = 2;
           Serial.print("  Quadrant III Movement: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
@@ -427,6 +447,7 @@ void moveHere()
         // Move Quadrant IV: 0x09 -> xxxx1001
         else if (directions == 0x09)
         {
+          whichSync = 2;
           Serial.print("  Quadrant IV Movement: "); 
           Serial.print(directions);
           Serial.print(" Distance: ");
