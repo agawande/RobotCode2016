@@ -73,8 +73,8 @@ void setup()
   sorterGrabber.setMaxSpeed(2000);
   sorterGrabber.setAcceleration(10000);
   //clamper.setMinPulseWidth(1);
-  clamper.setMaxSpeed(11000);
-  clamper.setAcceleration(11000);
+  clamper.setMaxSpeed(40);
+  clamper.setAcceleration(100);
   
   Serial.begin(9600);          //  setup serial
   
@@ -125,15 +125,21 @@ void setup()
   digitalWrite(MainConvD2, LOW);
   digitalWrite(GrabberDir1, HIGH);
   digitalWrite(GrabberDir2, LOW);
+  
+  clamper.moveTo(10);
 }
 
 void loop()
 {
   //sleep for 1ms to relenquish the processor
   delay(1);
-  Serial.println(analogRead(senseCoup1));
-  Serial.println(analogRead(senseCoup2));
-  DeCouple();
+//  Serial.println(analogRead(senseCoup1));
+//  Serial.println(analogRead(senseCoup2));
+//  DeCouple();
+         
+
+              clamper.run(); 
+
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -410,4 +416,5 @@ void controlCouplingMotors()
        analogWrite(Coup2, 0);
        break;
     }
+  }
 }
