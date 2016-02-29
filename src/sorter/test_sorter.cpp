@@ -7,4 +7,7 @@ using namespace std;
 int main()
 {
   Sorter sorter;
+
+  sorter.toHeightBargeB();
+  //sorter.goToD8();
 }

@@ -34,7 +34,6 @@ int main()
   Sorter sorter;
   //Laser laser;
   //Coupler coupler;  //will start as decoupled in the setup
-  //Lift lift;
   //Grabber grabber;
   //Conveyer conveyer;
   MultiUtil multi;
@@ -52,38 +51,24 @@ int main()
   waitForGoSwitch();
 
   motion.crossTunnel();
+
   //will have to wait so that we are out of the tunnel
   motion.checkForCompletion();
 
   //Drop the grabber once we are out of the tunnel
   sorter.dropGrabber();
 
+  //Open the grabber, ready to grab
   multi.deClampGrabber();
-
-  //Get the distance from front
-  //double distFromFront = laser.distanceFromFront();
-
-  //grabber.getLength() would have a slightly overestimated length so that we don't bump into the target
-  //motion.moveForward(distFromFront - grabber.getLength());
-
-  //double distFromShoterSide = laser.distanceFromShorterSide();
 
   //motion.moveNext(courseFile.next(), );
 
-  //maybe need to pass motion to it
-  //laser.alignToObject();
+  //moveInFrontOfBargeBBlock1();
 
-  moveInFrontOfBargeBBlock1();
-
+  //This should work for any barge, will change the name once I make sure
   takeInBargeB();
-  grabber.grabSet();
 
   return 0;
-}
-
-void grabSet()
-{
-
 }
 
 void storeBlock()
@@ -98,16 +83,25 @@ void storeBlock()
   multi.sorterDrop();
 }
 
+void grabSet()
+{
+   //Clamp the grabber around block
+   multi.clampGrabber();
+
+   //Start the grabber's conveyer
+   multi.startGrabberConveyer();
+}
 
 void takeInBargeB()
 {
-  lift.toHeightB();
-  grabSet();  //grab two columns
+  sorter.toHeightBargeB();
+  grabSet();  //grab one column
 
   while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
     multi.startMainConveyer();    //if it is already running?
   }
   multi.stopMainConveyer();
+  multi.stopGrabberConveyer();
 
   storeBlock();
 

@@ -12,6 +12,11 @@ int const SORTER_ADDRESS = 0x03;
 #define D7 7
 #define D8 8
 #define PICKUP 9
+#define FIVE_IN 11
+#define SEVEN_IN 12
+//#define
+#define SMALL 0
+#define BIG 1
 
 class Sorter
 {
@@ -57,59 +62,31 @@ public:
 
   void goTo(string color, int lsw_middle)
   {
-    switch(lsw_middle)
-    {
-      case 0:
-      case 1:
+    if ( color == "blue" ) {
+       if ( lsw_middle == SMALL ) {
+         goToD1();
+       } else {
+         goToD5();
+       }
+    } else if (color == "green") {
+       if ( lsw_middle == SMALL ) {
+         goToD2();
+       } else {
+         goToD6();
+       }
+    } else if (color == "yellow") {
+       if ( lsw_middle == SMALL ) {
+         goToD3();
+       } else {
+         goToD7();
+       }
+    } else if (color == "red") {
+       if ( lsw_middle == SMALL ) {
+         goToD4();
+       } else {
+         goToD8();
+       }
     }
-  }
-
-  void
-  goToSmallBlue()
-  {
-    goToD1();
-  }
-
-  void
-  goToSmallGreen()
-  {
-    goToD2();
-  }
-
-  void
-  goToSmallYellow()
-  {
-    goToD3();
-  }
-
-  void
-  goToSmallRed()
-  {
-    goToD4();
-  }
-
-  void
-  goToBigBlue()
-  {
-    goToD5();
-  }
-
-  void
-  goToBigGreen()
-  {
-    goToD6();
-  }
-
-  void
-  goToBigYellow()
-  {
-    goToD7();
-  }
-
-  void
-  goToBigRed()
-  {
-    goToD8();
   }
 
   void
@@ -170,6 +147,12 @@ public:
   dropGrabber()
   {
 
+  }
+
+  void
+  toHeightBargeB()
+  {
+    sendCmd(FIVE_IN);
   }
 
   void

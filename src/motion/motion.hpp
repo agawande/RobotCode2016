@@ -86,15 +86,15 @@ public:
   }
 
   void
-  spinCW(unsigned int dist)
+  spinCW(unsigned int angle)
   {
-    sendCmd(dist, CW_SPIN);
+    sendCmd(angle, CW_SPIN);
   }
 
   void
-  spinACW(unsigned int dist)
+  spinACW(unsigned int angle)
   {
-    sendCmd(dist, ACW_SPIN);
+    sendCmd(angle, ACW_SPIN);
   }
 
   void
