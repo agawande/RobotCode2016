@@ -489,10 +489,10 @@ void homePos()
 
 void deposit1()
 {
-  pickUpBlock();
+
       
-  stepperX.moveTo(-1000);
-  stepperY.moveTo(500);
+  stepperX.moveTo(-25);
+  stepperY.moveTo(14500);
   
    digitalWriteFast(20, HIGH);
    digitalWriteFast(21, HIGH);
@@ -589,10 +589,8 @@ void deposit4()
 
 void deposit5()
 {
-  pickUpBlock();
-      
-  stepperX.moveTo(-500);
-  stepperY.moveTo(500);
+  stepperX.moveTo(-1125);
+  stepperY.moveTo(16000);
   
   digitalWriteFast(20, HIGH);
   digitalWriteFast(21, HIGH);  
