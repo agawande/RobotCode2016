@@ -116,6 +116,8 @@ void loop()
   }
   else
   {
+    synchronizeTwo(X1, X2);
+    synchronizeTwo(Y2, Y1);
     synchronizeTwo(X2, Y2);
     synchronizeTwo(Y1, X1);
   }

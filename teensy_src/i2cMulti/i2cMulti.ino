@@ -1,41 +1,47 @@
-#include <AccelStepper.h>
+#include <A4988.h>
+#include <BasicStepperDriver.h>
+#include <DRV8825.h>
+#include <DRV8834.h>
+
+#include "AccelStepper.h"
 #include <Wire.h>
+#include <Stepper.h>
 
 #define SLAVE_ADDRESS 0x05
 
 byte dataReceived[] = {0, 0, 0, 0};                             //This array of Bytes is where the incoming data from the Pi will be stored.
 
 int numberOfByteReceived = 0;
-
+int state = 0;
 //SCL, pin 0
 //SDA, pin 1
 
 //Cage Conveyers
 int C1D1 = 2;
 int C1D2 = 3;
-//pseudo PWM
-int CC1 = 4;   //i.e. conveyer of cage
+//PWM
+int CC1 = 27;   //i.e. conveyer of cage
 
 int C2D1 = 5;
 int C2D2 = 6;
-//pseudo PWM
-int CC2 = 7;  //SPEED CONTROL
+//PWM
+int CC2 = 26;  //SPEED CONTROL
 
 int C3D1 = 8;
 int C3D2 = 9;
-//pseudo PWM
-int CC3 = 10;
+//PWM
+int CC3 = 25;
 
 int C4D1 = 11;
 int C4D2 = 12;
-//pseudo PWM
-int CC4 = 13;
+//PWM
+int CC4 = 24;
 
 //Main Conveyer
 int MainConvD1 = 23;
 int MainConvD2 = 22;
-//pseudo PWM
-int MainConv = 21;
+//PWM
+int MainConv = 16;
 
 //Grabber Conveyer Motor
 int GrabberDir1 = 20;
@@ -51,10 +57,11 @@ int clamperPin = A7;  //Using analog pin - no digital pin left
 
 AccelStepper clamper(1, clamperPin, clamperDir);  // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
 
-int sorterGrabberDir = 16;
+int sorterGrabberDir = 13;
 int sorterGrabberPin = A6;
 
-AccelStepper sorterGrabber(1, sorterGrabberPin, sorterGrabberDir);
+//int steps, int dir_pin, int step_pin
+DRV8825 sorterGrabber(200, sorterGrabberDir, sorterGrabberPin);
 
 //Coupling Motors
 int Coup1 =  14;  //PWM
@@ -69,9 +76,12 @@ boolean isCoupled = false;
 
 void setup()
 {
-  sorterGrabber.setMinPulseWidth(1);
-  sorterGrabber.setMaxSpeed(2000);
-  sorterGrabber.setAcceleration(10000);
+  sorterGrabber.setRPM(1);
+  sorterGrabber.setMicrostep(1);;
+  //sorterGrabber.setMinPulseWidth(1);
+  //sorterGrabber.setMaxSpeed(40);
+  //sorterGrabber.setAcceleration(20);
+  //sorterGrabber.setSpeed(20);
   //clamper.setMinPulseWidth(1);
   clamper.setMaxSpeed(40);
   clamper.setAcceleration(100);
@@ -80,7 +90,7 @@ void setup()
   
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
-  //Wire.onRequest(sendData);
+  Wire.onRequest(sendData);
 
   pinMode(C1D1, OUTPUT);
   pinMode(C1D2, OUTPUT);
@@ -126,20 +136,37 @@ void setup()
   digitalWrite(GrabberDir1, HIGH);
   digitalWrite(GrabberDir2, LOW);
   
-  clamper.moveTo(10);
+  //sorterGrabber.moveTo(100);
 }
 
 void loop()
 {
+  //sorterGrabber.rotate(110);
+  //sorterGrabber.run();
   //sleep for 1ms to relenquish the processor
-  delay(1);
+  //delay(1);
 //  Serial.println(analogRead(senseCoup1));
 //  Serial.println(analogRead(senseCoup2));
 //  DeCouple();
-         
+if (state == 0)
+  {
+    Serial.println("Completed command");
+     //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
+     //are moving, state is written to 1. When the motors reach their destination and the distance to move is 0, state is written to 0,
+     //for a very brief amount of time, (1 milisecond) and in this time, the Pi picks up that the command is completed. Once the Pi sends the 
+     //command to the Teensy 3.1, the Pi will wait in a while(1) loop, repeatedly checking the i2c bus to see if the Teensy has completed its operation.
+     //once the state is 0 for 1 ms, the Pi picks this up, and then sends a completed response to the Main Python program, through shared memory.
+     
 
-              clamper.run(); 
+     //Delay for 1 milisecond to give the Pi enough time to pick up this state (aid in the i2c communication)
+     //Whenever the Pi attempts to read the i2c line from the slave, that sends a request via i2c to the Teensy, when the Teensy receives a request,
+     //the Teensy calls the sendData() functions, as shown from the Wire.onRequest(sendData); function from above. This 1 milisecond delay gives plenty of time for the
+     //Raspberry Pi 2 to pick up that the move operation has been completed.
+     delay(1);
+  }
+  state = 1;      
 
+  //clamper.run();
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -223,13 +250,14 @@ void receiveEvent (int numBytes)
     }
     else
     {  
+      Serial.println("Robost check fail");
         //Wire.write(state);
         //Serial.println("Keys or Ordering of Bits to dont match");
     }   
  } 
 
 void moveHere()
-{    
+{
     //break down the four bytes in the usuable data that is 
     //designated for commands and data and also keys and ordering bits
     
@@ -254,126 +282,70 @@ void moveHere()
       //Result in a distance where the bits in dataReceived[1] are the Most Significant Bits.
       //int dist = ((0x0F & dataReceived[1]) << 8) | ((0x0F & dataReceived[2]) << 4) | (0x0F & dataReceived[3]);
       
+      //Wire.endTransmission(true);
     
       //Extract the directions by the same process of using a mask on the first byte, and using an AND operation.
-      byte directions = dataReceived[0] & 0x0F;
-      byte dir2 = dataReceived[1] & 0x0F;
-      if(dir2 == 0x01)
-      {
-         Serial.print(" Pick Block");
-         sorterGrabber.moveTo(-110);
-         while (sorterGrabber.distanceToGo() > 0)
-         {
-              sorterGrabber.run(); 
+      byte deviceID = dataReceived[0] & 0x0F;
+      byte function = dataReceived[3] & 0x0F;
+
+      
+      Serial.println(deviceID);
+      Serial.println(function);
+
+      //Main Conveyer, ID: 0
+      if ( deviceID == 0 ) {
+        convProcess(MainConvD1, MainConvD2, MainConv, function);
+      }
+      //Cage conveyer 1
+      else if ( deviceID == 1 ) {
+        convProcess(C1D1, C1D2, CC1, function);
+      }
+      //Cage conveyer 2
+      else if ( deviceID == 2 ) {
+        convProcess(C2D1, C2D2, CC2, function);
+      }
+      //Cage conveyer 3
+      else if ( deviceID == 3 ) {
+        convProcess(C3D1, C3D2, CC3, function);  
+      }
+      //Cage conveyer 4
+      else if ( deviceID == 4) {
+        convProcess(C4D1, C4D2, CC4, function);
+      }
+      //Grabber Conveyer
+      else if ( deviceID == 5) {
+        convProcess(GrabberDir1, GrabberDir2, GrabberConv, function);
+      }
+      //Coupler
+      else if (deviceID == 6) {
+         if ( function == 0 ) {
+           deCouple(); 
+         } else {
+           couple(); 
          }
       }
-      else if(dir2 == 0x02)
-      {
-         Serial.print(" Release Block");
-         sorterGrabber.moveTo(110);
-         while (sorterGrabber.distanceToGo() > 0)
-         {
-              sorterGrabber.run(); 
+      // Sorter Grabber
+      else if (deviceID == 7){
+         if ( function == 1) {
+           Serial.println(" Pick Block ");
+           sorterGrabber.rotate(110);
+           //sorterGrabber.moveTo(-110);
+           //sorterGrabber.runToPosition();
+         } else {
+           Serial.println(" Drop Block ");
+           //sorterGrabber.moveTo(110);
+           //sorterGrabber.runToPosition();
          }
       }
-      //NEED TO UPDATE THE SORTER PI CODE TO HANDLE THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      else if(dir2 == 0x00) {      
-        Serial.println("Command Decoded:");
-        //Now use the direction extracted determine how the motors should move
-        if (directions == 0x00)
-        {
-          Serial.print("  Cage Conveyer 1 On: ");
-          digitalWrite(CC1, HIGH);
-        }
-        else if (directions == 0x01)
-        {
-          Serial.print("  Cage Conveyer 1 Off: ");
-          digitalWrite(CC1, LOW);
-        }
-        else if (directions == 0x02)
-        {
-          Serial.print("  Cage Conveyer 2 On: ");
-          digitalWrite(CC2, HIGH);
-        }
-        else if (directions == 0x03)
-        {
-          Serial.print("  Cage Conveyer 2 Off: ");
-          digitalWrite(CC2, LOW);
-        }
-        else if (directions == 0x04)
-        {
-          Serial.print("  Cage Conveyer 3 On: ");
-          digitalWrite(CC3, HIGH);
-        }
-        else if (directions == 0x05)
-        {
-          Serial.print("  Cage Conveyer 3 Off: ");
-          digitalWrite(CC3, LOW);
-        }
-        else if (directions == 0x06)
-        {
-          Serial.print("  Cage Conveyer 4 On: ");
-          digitalWrite(CC4, HIGH);
-        }
-        else if (directions == 0x07)
-        {
-          Serial.print("  Cage Conveyer 4 Off: ");
-          digitalWrite(CC4, LOW);
-        }
-        else if (directions == 0x08)
-        {
-          Serial.print("  Main Conveyer On: ");
-          digitalWrite(MainConv, HIGH);
-        }
-        else if (directions == 0x09)
-        {
-          Serial.print("  Main Conveyer Off: ");
-          digitalWrite(MainConv, LOW);
-        }
-        else if (directions == 11)
-        {
-          Serial.print("  Grabber Conveyer On: ");  
-          digitalWrite(GrabberConv, HIGH);
-        }
-        else if (directions == 11)
-        {
-          Serial.print("  Grabber Conveyer Off: ");
-          digitalWrite(GrabberConv, HIGH);
-        }
-        else if (directions == 12)
-        {
-          Serial.print("  Clamper Close: ");
-          //Test and change
-          clamper.moveTo(90);
-        }
-        else if (directions == 13)
-        {
-          Serial.print("  Clamper Open: ");
-          //Test and change
-          clamper.moveTo(-90);
-        }
-        else if (directions == 14)
-        {
-          Serial.print("  Couple ");
-          Serial.println("");
-          Couple();
-        }
-        else if (directions == 15)
-        {
-          Serial.print(" DeCouple ");  
-          Serial.print(directions);
-          Serial.println("");
-          DeCouple();
-        }
-      }  
       Serial.println(" ");
       Serial.println(" ????????????????????????????????????");
       Serial.println(" ? Waiting for completed command... ?");
       Serial.println(" ????????????????????????????????????");
       Serial.println(" ");
+      state = 0;
 }
 
-void Couple()
+void couple()
 {  
   //Direction, might need to reverse it
   digitalWrite(Coup1Dir, HIGH);
@@ -381,10 +353,10 @@ void Couple()
 
   controlCouplingMotors(); 
   
-    isCoupled = true;
+  isCoupled = true;
 }
 
-void DeCouple()
+void deCouple()
 {
   digitalWrite(Coup1Dir, LOW);
   digitalWrite(Coup2Dir, HIGH);
@@ -418,3 +390,49 @@ void controlCouplingMotors()
     }
   }
 }
+
+ void convProcess(int convDir1, int convDir2, int convPin, int function) {
+   if ( function == 0 ) {
+     Serial.print("  Conveyer Off: ");
+     digitalWrite(convPin, LOW);
+   } else if (function == 1) {
+     Serial.print("  Conveyer Forward: ");
+     digitalWrite(convPin, HIGH);
+     digitalWrite(convDir1, HIGH);
+     digitalWrite(convDir2, LOW);
+   } else if (function == 2){
+     Serial.print("  Conveyer Reverse: ");
+     digitalWrite(convPin, HIGH);
+     digitalWrite(convDir1, LOW);
+     digitalWrite(convDir2, HIGH);
+   } else {
+     //Shuffle code goes here 
+   }
+ }
+
+void sendData()
+{  
+  //writes a 0 to the i2c bus
+   Wire.write(state);
+   //Cosmetic printing, the state 0 should be active for around 1 milisecond, so print the beginning for a new command cosmeticly
+   if (state == 0) // && commandFinished)
+   {
+       Serial.println("Completed Command!");
+       Serial.println("  -----------------------------");
+       Serial.print(" | Current X Coordinate ");
+       Serial.println(" ");
+       Serial.print(" | Current Y Coordinate ");
+       Serial.println(" ");
+       Serial.println("  -----------------------------");
+       Serial.println("||||||||||||||||||||||||||||||||||||||||||||");
+       Serial.println(" ");
+
+       //commandFinished = false;                                   //Reset these back to false, until a new command is received and decoded   
+   }
+
+   //reset the numberOfByteReceived to 0, so that the bytes can remain in order.
+   if (numberOfByteReceived == 4)
+   {
+      numberOfByteReceived = 0;
+   }
+ }

@@ -97,6 +97,7 @@ void AccelStepper::setCurrentPosition(long position)
 
 void AccelStepper::computeNewSpeed()
 {
+	printer->println("Hello library with serial connectivity!");
     long distanceTo = distanceToGo(); // +ve is clockwise from curent location
 
     long stepsToStop = (long)((_speed * _speed) / (2.0 * _acceleration)); // Equation 16

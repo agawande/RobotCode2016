@@ -39,14 +39,15 @@ void setup()
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
   Wire.onRequest(sendData); 
-  //stepperZ.moveTo(1000);
+  stepperX.moveTo(100);
+  //stepperY.moveTo(10000);
 }
 
 void loop()
 {
-  //digitalWriteFast(22, HIGH);
-    //if (stepperZ.distanceToGo() == 0)
-     // stepperZ.moveTo(-stepperZ.currentPosition());
+  digitalWriteFast(20, HIGH);
+    //if (stepperY.distanceToGo() == 0)
+      // stepperY.moveTo(-stepperY.currentPosition());
 //  if (stop == true)
 //  {
 //  deposit1();
@@ -108,7 +109,7 @@ void loop()
   //Return back to state 1
   state = 1;
   //The runAll function is repeatedly ran, this function branches out to the rest of the functions
-   runAll();  
+   runAll();
 }
 
 void motorSetup(void)
@@ -143,7 +144,7 @@ void motorSetup(void)
   digitalWriteFast(7, LOW); //M2
   //Sleep Pin for Y
   digitalWriteFast(21, LOW);
-    
+  
   stepperY.setMaxSpeed(1000000);
   stepperY.setAcceleration(800000);
   
@@ -265,10 +266,10 @@ void receiveEvent (int numBytes)
           //Wire.write(state);
           //Serial.println("Keys or Ordering of Bits to dont match");
       }   
- } 
+ }
 
 void moveHere()
-{    
+{
     //break down the four bytes in the usuable data that is 
     //designated for commands and data and also keys and ordering bits
     
@@ -296,24 +297,46 @@ void moveHere()
     
       //Extract the directions by the same process of using a mask on the first byte, and using an AND operation.
       byte directions = dataReceived[0] & 0x0F;
-      
+
+      byte dataToBeSent[] = {0, 0, 0, 0};
+      dataToBeSent[0] = dataReceived[0] & 0xF0;
+      dataToBeSent[0] = dataToBeSent[0] | 0x07;
+      Serial.println("sdkv kjsv");
+      Serial.println(dataToBeSent[0], BIN);
+      dataToBeSent[1] = dataReceived[1] & 0xF0;
+      Serial.println(dataToBeSent[1], BIN);
+      dataToBeSent[2] = dataReceived[2] & 0xF0;
+      Serial.println(dataToBeSent[2], BIN);
+      //Open Grabber
+      //dataToBeSent[3] = dataReceived[3] & 0xF0;
+      //Close Grabber
+      dataToBeSent[3] = dataReceived[3] & 0xF0;
+      dataToBeSent[3] = dataToBeSent[3] | 0x01;
+      Serial.println(dataToBeSent[3], BIN);
+      //Wire.write(dataToBeSent);
+
       Serial.println("Command Decoded:");
       Serial.print(directions, HEX);
       //Now use the direction extracted determine how the motors should move
       //Home Position: 0x00 -> xxxx0000 
       if (directions == 0x00)
       {
-        Serial.print("  Move Home: "); 
+        Serial.print("  Move Home: ");
         Serial.print(directions);
-        Serial.println("");                                            
-        homePos();                                                     
-      } 
+        Serial.println("");
+        homePos();
+      }
       //Deposit 1: 0x01 -> xxxx0001 
         else if (directions == 0x01)
         {
-          Serial.print("  Move Drop off 1: "); 
+          Serial.print(" Move Drop off 1: ");
           Serial.print(directions);
           Serial.println("");
+          pickUpBlock();
+          //send command to teensy++2 to grab the block
+          Wire.beginTransmission(0x05);
+          Wire.write(dataToBeSent, 4);
+          Wire.endTransmission();
           deposit1();
         }
        //Deposit 2: 0x02 -> xxxx0010
@@ -397,7 +420,6 @@ void moveHere()
           Serial.print("  Sort position: ");  
           Serial.print(directions);
           Serial.println("");
-          
         }
         else if (directions == 11)
         {
@@ -425,7 +447,6 @@ void moveHere()
           Serial.print("  Coupling position: ");  
           Serial.print(directions);
           Serial.println("");
-          
         }
         Serial.println(" ");
         Serial.println(" ????????????????????????????????????");
@@ -489,8 +510,6 @@ void homePos()
 
 void deposit1()
 {
-
-      
   stepperX.moveTo(-25);
   stepperY.moveTo(14500);
   
@@ -499,6 +518,15 @@ void deposit1()
   
   while(true)
   {
+    if (stepperX.distanceToGo() == 0)
+    
+    {
+       digitalWriteFast(20, LOW);
+    }
+        if (stepperY.distanceToGo() == 0)
+    {
+       digitalWriteFast(21, LOW); 
+    }
     if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
     {
        break; 
@@ -506,8 +534,8 @@ void deposit1()
     runAll();     
   } 
   
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW); 
+  
+  
   beenReached = true; 
   //delay(200);
 }
@@ -589,7 +617,7 @@ void deposit4()
 
 void deposit5()
 {
-  stepperX.moveTo(-1125);
+  stepperX.moveTo(-1168);
   stepperY.moveTo(16000);
   
   digitalWriteFast(20, HIGH);
@@ -635,7 +663,6 @@ void deposit6()
 
 void deposit7()
 {
-  pickUpBlock();
       
   stepperX.moveTo(-500);
   stepperY.moveTo(12000);
@@ -705,3 +732,12 @@ void pickUpBlock()
   //delay(200);
 }
 
+void sorterGrabber(int function)
+{
+   //int cmd = 7;
+  
+   //function 1 = pick up block, 0 = release
+  // if ( function == 0 || function == 1 ) {
+   //  Wire.write();
+  // }
+}

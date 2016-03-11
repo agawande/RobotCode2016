@@ -606,7 +606,6 @@ private:
 
     /// Current direction motor is spinning in
     boolean _direction; // 1 == CW
-
 };
 
 /// @example Random.pde
