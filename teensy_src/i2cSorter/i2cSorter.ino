@@ -34,8 +34,7 @@ void setup()
   
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
-  
-  
+
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
   Wire.onRequest(sendData); 
@@ -332,12 +331,17 @@ void moveHere()
           Serial.print(" Move Drop off 1: ");
           Serial.print(directions);
           Serial.println("");
-          pickUpBlock();
+          //pickUpBlock();
           //send command to teensy++2 to grab the block
           Wire.beginTransmission(0x05);
           Wire.write(dataToBeSent, 4);
+          //Needs to send true to release the i2c bus, default is true - no need for this
+          //bool release_i2c = true;
           Wire.endTransmission();
-          deposit1();
+          //Serial.println("return code");
+          //Serial.println(Wire.endTransmission());
+          Wire.begin(SLAVE_ADDRESS);
+          //deposit1();
         }
        //Deposit 2: 0x02 -> xxxx0010
         else if (directions == 0x02)

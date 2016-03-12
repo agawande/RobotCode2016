@@ -1,7 +1,7 @@
-#include <A4988.h>
-#include <BasicStepperDriver.h>
-#include <DRV8825.h>
-#include <DRV8834.h>
+//#include <A4988.h>
+//#include <BasicStepperDriver.h>
+//#include <DRV8825.h>
+//#include <DRV8834.h>
 
 #include "AccelStepper.h"
 #include <Wire.h>
@@ -61,7 +61,8 @@ int sorterGrabberDir = 13;
 int sorterGrabberPin = A6;
 
 //int steps, int dir_pin, int step_pin
-DRV8825 sorterGrabber(200, sorterGrabberDir, sorterGrabberPin);
+//DRV8825 sorterGrabber(200, sorterGrabberDir, sorterGrabberPin);
+AccelStepper sorterGrabber(1, sorterGrabberPin, sorterGrabberDir);
 
 //Coupling Motors
 int Coup1 =  14;  //PWM
@@ -76,11 +77,13 @@ boolean isCoupled = false;
 
 void setup()
 {
-  sorterGrabber.setRPM(1);
-  sorterGrabber.setMicrostep(1);;
-  //sorterGrabber.setMinPulseWidth(1);
-  //sorterGrabber.setMaxSpeed(40);
-  //sorterGrabber.setAcceleration(20);
+  /* for the other library
+  //sorterGrabber.setRPM(1);
+  //sorterGrabber.setMicrostep(1);
+  */
+  sorterGrabber.setMinPulseWidth(1);
+  sorterGrabber.setMaxSpeed(40);
+  sorterGrabber.setAcceleration(20);
   //sorterGrabber.setSpeed(20);
   //clamper.setMinPulseWidth(1);
   clamper.setMaxSpeed(40);
@@ -137,6 +140,7 @@ void setup()
   digitalWrite(GrabberDir2, LOW);
   
   //sorterGrabber.moveTo(100);
+  //yield();
 }
 
 void loop()
@@ -167,6 +171,7 @@ if (state == 0)
   state = 1;      
 
   //clamper.run();
+  sorterGrabber.run();
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -327,12 +332,13 @@ void moveHere()
       // Sorter Grabber
       else if (deviceID == 7){
          if ( function == 1) {
-           Serial.println(" Pick Block ");
-           sorterGrabber.rotate(110);
-           //sorterGrabber.moveTo(-110);
+           //Serial.println(" Pick Block ");
+           //yield();
+           //sorterGrabber.rotate(110);
+           sorterGrabber.moveTo(-110);
            //sorterGrabber.runToPosition();
          } else {
-           Serial.println(" Drop Block ");
+           //Serial.println(" Drop Block ");
            //sorterGrabber.moveTo(110);
            //sorterGrabber.runToPosition();
          }
