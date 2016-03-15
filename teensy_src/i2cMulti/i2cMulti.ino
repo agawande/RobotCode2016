@@ -168,7 +168,7 @@ if (state == 0)
      //Raspberry Pi 2 to pick up that the move operation has been completed.
      delay(1);
   }
-  state = 1;      
+  state = 1;
 
   //clamper.run();
   sorterGrabber.run();
@@ -244,7 +244,7 @@ void receiveEvent (int numBytes)
         Serial.println(" ");
         Serial.println("Initiating Command...");
         Serial.println("  -----------------------------");
-         
+        delay(1);
         moveHere();
         dataReceived[0] = 0;                                                 //Reset data received back to zero for next data set
         dataReceived[1] = 0;
@@ -293,55 +293,29 @@ void moveHere()
       byte deviceID = dataReceived[0] & 0x0F;
       byte function = dataReceived[3] & 0x0F;
 
-      
       Serial.println(deviceID);
       Serial.println(function);
 
-      //Main Conveyer, ID: 0
-      if ( deviceID == 0 ) {
-        convProcess(MainConvD1, MainConvD2, MainConv, function);
-      }
-      //Cage conveyer 1
-      else if ( deviceID == 1 ) {
-        convProcess(C1D1, C1D2, CC1, function);
-      }
-      //Cage conveyer 2
-      else if ( deviceID == 2 ) {
-        convProcess(C2D1, C2D2, CC2, function);
-      }
-      //Cage conveyer 3
-      else if ( deviceID == 3 ) {
-        convProcess(C3D1, C3D2, CC3, function);  
-      }
-      //Cage conveyer 4
-      else if ( deviceID == 4) {
-        convProcess(C4D1, C4D2, CC4, function);
-      }
-      //Grabber Conveyer
-      else if ( deviceID == 5) {
-        convProcess(GrabberDir1, GrabberDir2, GrabberConv, function);
-      }
-      //Coupler
-      else if (deviceID == 6) {
-         if ( function == 0 ) {
-           deCouple(); 
-         } else {
-           couple(); 
-         }
-      }
-      // Sorter Grabber
-      else if (deviceID == 7){
-         if ( function == 1) {
-           //Serial.println(" Pick Block ");
-           //yield();
-           //sorterGrabber.rotate(110);
-           sorterGrabber.moveTo(-110);
-           //sorterGrabber.runToPosition();
-         } else {
-           //Serial.println(" Drop Block ");
-           //sorterGrabber.moveTo(110);
-           //sorterGrabber.runToPosition();
-         }
+
+      switch(deviceID) {
+         case 0: convProcess(MainConvD2, MainConvD1, MainConv, function); break;
+         case 1: convProcess(C1D1, C1D2, CC1, function); break;
+         case 2: convProcess(C2D1, C2D2, CC2, function); break;
+         case 3: convProcess(C3D1, C3D2, CC3, function); break;
+         case 4: convProcess(C4D1, C4D2, CC4, function); break;
+         case 5: convProcess(GrabberDir1, GrabberDir2, GrabberConv, function); break;
+         case 6: 
+              switch(function) {
+                case 0: deCouple(); break;
+                case 1: couple(); break;
+              }
+              break;
+         case 7: 
+              switch(function) {
+                case 0: sorterGrabber.moveTo(-110);
+                case 1: sorterGrabber.moveTo(110);
+              }
+              break;
       }
       Serial.println(" ");
       Serial.println(" ????????????????????????????????????");
@@ -371,30 +345,45 @@ void deCouple()
   
   isCoupled = false;
 }
-
+unsigned long startT, endT, nowT;
 void controlCouplingMotors()
 {
-  analogWrite(Coup1, 255);
-  analogWrite(Coup2, 255);
+  analogWrite(Coup1, 200);
+  analogWrite(Coup2, 200);
   
   //Prelimnary code for coupler
-  int start = millis();
-  int end = 0;
+  startT = micros();
+  Serial.print("start: ");
+  Serial.println(startT);
+  //unsigned long endT;
+ // unsigned long nowT;
 
   while(1){
     int sensorValue1 = analogRead(senseCoup1);
     int sensorValue2 = analogRead(senseCoup2);
+      Serial.print("Sense1: ");
       Serial.println(analogRead(senseCoup1));
+      Serial.print("Sense2: ");
       Serial.println(analogRead(senseCoup2));
-      end = millis() - start;
-    //Randomly just 1
-    if((sensorValue1 > 52 && sensorValue2 > 52) ||  end > 400){
-      Serial.println("Motor Off");
-       analogWrite(Coup1, 0);
-       analogWrite(Coup2, 0);
-       break;
-    }
-  }
+      nowT = micros();
+      endT = nowT - startT;
+      Serial.print("nowT: ");
+      Serial.println(nowT);
+      Serial.print("End: ");
+      Serial.println(endT);
+      
+      //Randomly just 1
+      if( (sensorValue1 > 260 && sensorValue2 > 250) ){
+        Serial.println("Motor Off");
+         analogWrite(Coup1, 0);
+         analogWrite(Coup2, 0);
+         break;
+      }
+
+      if (endT > 40000) {
+        break;
+      }
+  } //end of while
 }
 
  void convProcess(int convDir1, int convDir2, int convPin, int function) {
@@ -410,10 +399,47 @@ void controlCouplingMotors()
      Serial.print("  Conveyer Reverse: ");
      digitalWrite(convPin, HIGH);
      digitalWrite(convDir1, LOW);
-     digitalWrite(convDir2, HIGH);
+     //digitalWrite(convDir2, HIGH);
+     analogWrite(convDir2, 200);
    } else {
-     //Shuffle code goes here 
+     //Shuffle code goes here
+    // start = millis();
+    
+  /*  while(millis() - start < 12000)
+    {
+      if (flip == true)
+      {
+        for(int i = 150; i > 100; i--)
+        {  
+          digitalWrite(C1D1, LOW);
+          digitalWrite(C1D2, HIGH);
+          analogWrite(27, i);
+          delay(65);
+        }
+      }
+      
+      if (flip == true)
+      {
+        for(int i = 150; i > 100; i--)
+        {  
+          digitalWrite(C1D1, HIGH);
+          digitalWrite(C1D2, LOW);
+          analogWrite(27, i);
+          delay(40);
+        }
+        flip = false; 
+      }
+      
+      for(int i = 200; i < 255; i++)
+      {  
+        digitalWrite(C1D1, LOW);
+        digitalWrite(C1D2, HIGH);
+        analogWrite(27, i);
+        delay(30);
+      }*/
    }
+   Wire.begin(SLAVE_ADDRESS);
+   delay(1);
  }
 
 void sendData()

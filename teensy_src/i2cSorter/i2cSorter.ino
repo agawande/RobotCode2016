@@ -4,8 +4,46 @@
 
 #define SLAVE_ADDRESS 0x03
 
-byte dataReceived[] = {0, 0, 0, 0};                             //This array of Bytes is where the incoming data from the Pi will be stored.
+//Heights
+#define ENV_HEIGHT                1000
+#define LOW_LOAD_HEIGHT           1000
+#define MID_LOAD_HEIGHT           1000
+#define HIGH_LOAD_HEIGHT          1000
+#define COUPLING_HEIGHT           1000
+#define SORTER_GRAB_POSITION      1000
+#define SORTER_CLEARANCE          1000
+#define SMALL_BLOCK_CAGE_HEIGHT   1000
+#define DEPOSIT_HEIGHT            1000
 
+//Sorter positions
+#define XHOME              0
+#define YHOME              0
+#define LARGE_RED_X     1000
+#define LARGE_RED_Y     1000
+#define LARGE_YELLOW_X  1000
+#define LARGE_YELLOW_Y  1000
+#define LARGE_GREEN_X   1000
+#define LARGE_GREEN_Y   1000
+#define LARGE_BLUE_X    1000
+#define LARGE_BLUE_Y    1000
+
+#define SMALL_RED_X     1000
+#define SMALL_RED_Y     1000
+#define SMALL_YELLOW_X  1000
+#define SMALL_YELLOW_Y  1000
+#define SMALL_GREEN_X   1000
+#define SMALL_GREEN_Y   1000
+#define SMALL_BLUE_X    1000
+#define SMALL_BLUE_Y    1000
+
+//Colors
+#define RED      0
+#define YELLOW   1
+#define GREEN    2
+#define BLUE     3
+
+byte dataReceived[] = {0, 0, 0, 0};                             //This array of Bytes is where the incoming data from the Pi will be stored.
+byte dataToBeSent[] = {0, 0, 0, 0};
 
 int state;                                                      //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
                                                                 //are moving, state is written to 1. When the motors reach their destination and the distance to move is 0, state is written to 0,
@@ -108,7 +146,7 @@ void loop()
   //Return back to state 1
   state = 1;
   //The runAll function is repeatedly ran, this function branches out to the rest of the functions
-   runAll();
+  // runAll();
 }
 
 void motorSetup(void)
@@ -269,22 +307,22 @@ void receiveEvent (int numBytes)
 
 void moveHere()
 {
-    //break down the four bytes in the usuable data that is 
-    //designated for commands and data and also keys and ordering bits
+      //break down the four bytes in the usuable data that is 
+      //designated for commands and data and also keys and ordering bits
     
-    //The whole four Bytes:
-    //00000000 00000000 00000000 00000000
-    //Ordering Bits are:
-    //00xxxxxx 01xxxxxx 10xxxxxx 11xxxxxx *This is how a correctly ordered 4 bytes should be received on the teensy
-    //Key Bits are:
-    //xx11xxxx xx11xxxx xx11xxxx xx11xxxx *This is how a correctly keyed 4 bytes should be received, with a key of either 00, 01, 10, or 11 contained in all 4 bytes
-    //Commands are:
-    //xxxx0000 xxxxxxxx xxxxxxxx xxxxxxxx *Where there are 15 avaible commands contained in these four consequtive bits (as of now, only 4 command types are programmed into the Teensy code)
-    //Data are (Distances and Angles):
-    //xxxxxxxx xxxx0000 xxxx0000 xxxx0000 *This is how the data is formulated. There are 12 designated bits for the Data (Which is either a distance or and angle based on the commands) 12 bits contain 2^12 or 
-    //                                    *4095 possible different data options, which if milimeters are being used in distances, gives 4.095 meters, which is plently for course   
+      //The whole four Bytes:
+      //00000000 00000000 00000000 00000000
+      //Ordering Bits are:
+      //00xxxxxx 01xxxxxx 10xxxxxx 11xxxxxx *This is how a correctly ordered 4 bytes should be received on the teensy
+      //Key Bits are:
+      //xx11xxxx xx11xxxx xx11xxxx xx11xxxx *This is how a correctly keyed 4 bytes should be received, with a key of either 00, 01, 10, or 11 contained in all 4 bytes
+      //Commands are:
+      //xxxx0000 xxxxxxxx xxxxxxxx xxxxxxxx *Where there are 15 avaible commands contained in these four consequtive bits (as of now, only 4 command types are programmed into the Teensy code)
+      //Data are (Distances and Angles):
+      //xxxxxxxx xxxx0000 xxxx0000 xxxx0000 *This is how the data is formulated. There are 12 designated bits for the Data (Which is either a distance or and angle based on the commands) 12 bits contain 2^12 or 
+      //                                    *4095 possible different data options, which if milimeters are being used in distances, gives 4.095 meters, which is plently for course   
     
-    //where x's are dont cares
+      //where x's are dont cares
 
 
       //extract the distance by applying a mask of:
@@ -297,168 +335,231 @@ void moveHere()
       //Extract the directions by the same process of using a mask on the first byte, and using an AND operation.
       byte directions = dataReceived[0] & 0x0F;
 
-      byte dataToBeSent[] = {0, 0, 0, 0};
-      dataToBeSent[0] = dataReceived[0] & 0xF0;
-      dataToBeSent[0] = dataToBeSent[0] | 0x07;
-      Serial.println("sdkv kjsv");
-      Serial.println(dataToBeSent[0], BIN);
-      dataToBeSent[1] = dataReceived[1] & 0xF0;
-      Serial.println(dataToBeSent[1], BIN);
-      dataToBeSent[2] = dataReceived[2] & 0xF0;
-      Serial.println(dataToBeSent[2], BIN);
-      //Open Grabber
-      //dataToBeSent[3] = dataReceived[3] & 0xF0;
-      //Close Grabber
-      dataToBeSent[3] = dataReceived[3] & 0xF0;
-      dataToBeSent[3] = dataToBeSent[3] | 0x01;
-      Serial.println(dataToBeSent[3], BIN);
+      int type = 0x0F & dataReceived[1];
+      int more = 0x0F & dataReceived[2];
+      int color = 0x0F & dataReceived[3];
+
+      int dist = (type << 8) | (more << 4) | (color);
+      
+
       //Wire.write(dataToBeSent);
 
       Serial.println("Command Decoded:");
       Serial.print(directions, HEX);
-      //Now use the direction extracted determine how the motors should move
-      //Home Position: 0x00 -> xxxx0000 
-      if (directions == 0x00)
-      {
-        Serial.print("  Move Home: ");
-        Serial.print(directions);
-        Serial.println("");
-        homePos();
-      }
-      //Deposit 1: 0x01 -> xxxx0001 
-        else if (directions == 0x01)
-        {
-          Serial.print(" Move Drop off 1: ");
-          Serial.print(directions);
-          Serial.println("");
-          //pickUpBlock();
-          //send command to teensy++2 to grab the block
-          Wire.beginTransmission(0x05);
-          Wire.write(dataToBeSent, 4);
-          //Needs to send true to release the i2c bus, default is true - no need for this
-          //bool release_i2c = true;
-          Wire.endTransmission();
-          //Serial.println("return code");
-          //Serial.println(Wire.endTransmission());
-          Wire.begin(SLAVE_ADDRESS);
-          //deposit1();
-        }
-       //Deposit 2: 0x02 -> xxxx0010
-        else if (directions == 0x02)
-        {
-          Serial.print("  Move Drop off 2: ");  
-          Serial.print(directions);
-          Serial.println("");
-          deposit2();    
-        }
-       //Deposit 3: 0x03 -> xxxx0011
-        else if (directions == 0x03)
-        {
-          Serial.print("  Move Drop off 3: ");  
-          Serial.print(directions);
-          Serial.println("");
-          deposit3();
-        }
-        //Deposit 4: 0x04 -> xxxx0100 
-        else if (directions == 0x04)
-        {
-          Serial.print("  Move Drop off 4: ");  
-          Serial.print(directions);
-          Serial.println("");
-          deposit4();
-        }
-        //Deposit 5: 0x05 -> xxxx0101 
-        else if (directions == 0x05)
-        {
-          Serial.print("  Move Drop off 5: ");  
-          Serial.println("");
-          deposit5();          
-        }
-        //Deposit 6: 0x06 -> xxxx0110
-        else if (directions == 0x06)
-        {
-          Serial.print("  Move Drop off 6: ");  
-          Serial.print(directions);
-          Serial.println("");
-          deposit6();
-        }
-        //Deposit 7: 0x07 -> xxxx0111
-        else if (directions == 0x07)
-        {
-          Serial.print("  Move Drop off 7: ");  
-          Serial.print(directions);
-          Serial.println("");
-          deposit7();
-        }
-        //Deposit 8: 0x08 -> xxxx1000
-        else if (directions == 0x08)
-        {
-          Serial.print("  Move Drop off 8: ");  
-          Serial.print(directions);
-          Serial.println("");
-          //deposit8();
-          
-           digitalWriteFast(22, HIGH);
-           stepperZ.move(1000);
-           while(true)
-           {
-             if (stepperZ.distanceToGo() == 0)
-             {
-                break;
+
+      switch(directions) {
+        case 0: deployGrabber(); break;
+        case 1: 
+             switch(dist) {
+               case 0: stepperZ.moveTo(ENV_HEIGHT); break;
+               case 1: stepperZ.moveTo(LOW_LOAD_HEIGHT); break;
+               case 2: stepperZ.moveTo(MID_LOAD_HEIGHT); break;
+               case 3: stepperZ.moveTo(HIGH_LOAD_HEIGHT); break;
              }
-             runAll();
-           }
-            digitalWriteFast(22, LOW);
-            beenReached = true;
-        }
-        //Deposit 5: 0x09 -> xxxx1001
-        else if (directions == 0x09)
-        {
-          Serial.print("  Block Retrieval Point: ");  
-          Serial.print(directions);
-          Serial.println("");
-          pickUpBlock();
-        }
-        else if (directions == 10)
-        {
-          Serial.print("  Sort position: ");  
-          Serial.print(directions);
-          Serial.println("");
-        }
-        else if (directions == 11)
-        {
-          Serial.print("  5 inch: ");  
-          Serial.print(directions);
-          Serial.println("");
-          //stepperZ.moveTo(50);
-        }
-        else if (directions == 12)
-        {
-          Serial.print("  7 inch: ");  
-          Serial.print(directions);
-          Serial.println("");
-          
-        }
-        else if (directions == 13)
-        {
-          Serial.print("  10 inch: ");  
-          Serial.print(directions);
-          Serial.println("");
-          
-        }
-        else if (directions == 0x14)
-        {
-          Serial.print("  Coupling position: ");  
-          Serial.print(directions);
-          Serial.println("");
-        }
-        Serial.println(" ");
-        Serial.println(" ????????????????????????????????????");
-        Serial.println(" ? Waiting for completed command... ?");
-        Serial.println(" ????????????????????????????????????");
-        Serial.println(" ");
+             break;
+        case 2: moveToDepositHeight(); break;
+        case 3: 
+             switch(type) {
+                case 0:
+                   switch(color) {
+                     case RED: sortLarge(LARGE_RED_X,LARGE_RED_Y, more); break;
+                     case YELLOW: sortLarge(LARGE_YELLOW_X,LARGE_YELLOW_Y, more); break;
+                     case GREEN: sortLarge(LARGE_GREEN_X,LARGE_GREEN_Y, more); break;
+                     case BLUE: sortLarge(LARGE_BLUE_X,LARGE_BLUE_Y, more); break;
+                   }
+                   break;
+                case 1:
+                   switch(color) {
+                     case RED: sortSmall(SMALL_RED_X,SMALL_RED_Y, more); break;
+                     case YELLOW: sortSmall(SMALL_YELLOW_X,SMALL_YELLOW_Y, more); break;
+                     case GREEN: sortSmall(SMALL_GREEN_X,SMALL_GREEN_Y, more); break;
+                     case BLUE: sortSmall(SMALL_BLUE_X,SMALL_BLUE_Y, more); break;
+                   }
+                   break;
+             }
+             break;
+      }
+
+      Serial.println(" ");
+      Serial.println(" ????????????????????????????????????");
+      Serial.println(" ? Waiting for completed command... ?");
+      Serial.println(" ????????????????????????????????????");
+      Serial.println(" ");
 }
- 
+
+void goToPosition(int x, int y)
+{
+  stepperX.moveTo(x);
+  stepperY.moveTo(y); 
+  
+  digitalWriteFast(20, HIGH);
+  digitalWriteFast(21, HIGH);
+  
+  while(true)
+  {
+    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
+    {
+       break;
+    }
+    runAll();
+  }
+  
+  digitalWriteFast(20, LOW);
+  digitalWriteFast(21, LOW);
+  beenReached = true;
+}
+
+void sortLarge(int x, int y, int more)
+{
+   //For 10 inch tier we have to go down first
+   if (stepperZ.currentPosition() > MID_LOAD_HEIGHT) {
+      zAxisTo(MID_LOAD_HEIGHT);
+   }
+
+   //Go to the pick up location
+   goToPosition(XHOME, YHOME);
+
+   //Raise Z to correct height to pick up
+   zAxisTo(SORTER_GRAB_POSITION);
+     
+   sorterGrab();
+
+   //Lower it a bit to sort
+   zAxisTo(SORTER_CLEARANCE);
+
+   goToPosition(x, y);
+   
+   sorterDrop();
+   
+   //Go back to the pick up location
+   goToPosition(XHOME, YHOME);
+
+   if (more == 1) {
+     //Move back to grab more blocks
+     zAxisTo(SORTER_GRAB_POSITION);
+   }
+}
+
+void sortSmall(int x, int y, int more)
+{
+   //Have to lower it anyways because
+   //small blocks are picked up from
+   //highest tier
+   //For 10 inch tier we have to go down first
+   zAxisTo(MID_LOAD_HEIGHT);
+
+   //Go to the pick up location
+   goToPosition(XHOME, YHOME);
+
+   //Raise Z to correct height to pick up
+   zAxisTo(SORTER_GRAB_POSITION);
+     
+   sorterGrab();
+
+   //Go to coupling height
+   zAxisTo(COUPLING_HEIGHT);
+
+   //Couple
+   couple();
+
+   //Go to position while cage is down
+   goToPosition(x, y);
+
+   //Move cage up
+   zAxisTo(SMALL_BLOCK_CAGE_HEIGHT);
+
+   //Drop the block
+   sorterDrop();
+
+   //Drop the cage and decouple
+   zAxisTo(COUPLING_HEIGHT);
+   deCouple();
+   
+   //Go back to the pick up location
+   goToPosition(XHOME, YHOME);
+
+   if (more == 1) {
+     //Move back to grab more blocks
+     zAxisTo(SORTER_GRAB_POSITION);
+   }
+}
+
+void zAxisTo(int z) {
+   stepperZ.moveTo(z);
+   while(true)
+   {
+     if (stepperZ.distanceToGo() == 0)
+     {
+        break;
+     }
+     runAll();
+   }
+}
+
+void sorterGrab()
+{
+	//device id is 7, function is 0
+  sendCmdMulti(0x07, 0xF0);
+}
+
+void sorterDrop()
+{
+	//device id is 7, function is 1
+  sendCmdMulti(0x07, 0xF1);
+}
+
+void sendCmdMulti(byte cmdMask, byte functMask)
+{
+    dataToBeSent[0] = dataReceived[0] & 0xF0;
+    dataToBeSent[0] = dataToBeSent[0] | cmdMask;
+    //Set distance 1, 2 as zero
+    dataToBeSent[1] = dataReceived[1] & 0xF0;
+    dataToBeSent[2] = dataReceived[2] & 0xF0;
+
+    dataToBeSent[3] = dataReceived[3] & functMask;
+    
+	
+	  Wire.beginTransmission(0x05);
+  
+	  Wire.write(dataToBeSent, 4);
+			  
+	  Wire.endTransmission();
+	  //Serial.println("return code");
+	  //Serial.println(Wire.endTransmission());
+	  Wire.begin(SLAVE_ADDRESS);
+	  Wire.onReceive(receiveEvent);
+	  Wire.onRequest(sendData);
+}
+
+//Complex command to couple and move to deposit height
+void moveToDepositHeight()
+{
+   //Move stepperZ to coupling position
+   zAxisTo(COUPLING_HEIGHT);
+   
+   couple();
+   
+   //Move stepperZ to deposit height
+   zAxisTo(DEPOSIT_HEIGHT);
+}
+
+void couple()
+{
+  //Device id of coupler = 6, couple = 1
+  sendCmdMulti(0x06, 0x01);
+}
+
+void deCouple()
+{
+  //Device id of coupler = 6, decouple = 0
+  sendCmdMulti(0x06, 0x00);
+}
+
+void deployGrabber()
+{
+	goToPosition(100, -50);
+  goToPosition(500, 0);
+}
 
 void sendData()
 {  
@@ -489,259 +590,3 @@ void sendData()
    }    
 }
 
-void homePos()
-{
-  stepperX.moveTo(0);
-  stepperY.moveTo(0); 
-  
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  }  
-  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200);
-}
-
-void deposit1()
-{
-  stepperX.moveTo(-25);
-  stepperY.moveTo(14500);
-  
-   digitalWriteFast(20, HIGH);
-   digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0)
-    
-    {
-       digitalWriteFast(20, LOW);
-    }
-        if (stepperY.distanceToGo() == 0)
-    {
-       digitalWriteFast(21, LOW); 
-    }
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  
-  
-  
-  beenReached = true; 
-  //delay(200);
-}
-
-void deposit2()
-{
-  pickUpBlock();
-      
-  stepperX.moveTo(-1000);
-  stepperY.moveTo(6000);
-  
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200);
-}
-
-void deposit3()
-{
-  pickUpBlock();
-      
-  stepperX.moveTo(-1000);
-  stepperY.moveTo(12000);
-  
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true; 
-  //delay(200);
-}
-
-void deposit4()
-{
-  pickUpBlock();
-      
-  stepperX.moveTo(-1000);
-  stepperY.moveTo(18000);
-  
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200);
-}
-
-void deposit5()
-{
-  stepperX.moveTo(-1168);
-  stepperY.moveTo(16000);
-  
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);  
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true; 
-  //delay(200);
-}
-
-void deposit6()
-{
-   pickUpBlock();
-      
-  stepperX.moveTo(-500);
-  stepperY.moveTo(6000);
-
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200);
-}
-
-void deposit7()
-{
-      
-  stepperX.moveTo(-500);
-  stepperY.moveTo(12000);
-
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200); 
-}
-
-void deposit8()
-{
-  pickUpBlock();
-      
-  stepperX.moveTo(-500);
-  stepperY.moveTo(18000);
- 
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  } 
-  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200);
-}
-
-void pickUpBlock()
-{
-  stepperX.moveTo(-1149);
-  stepperY.moveTo(26560);
-  
-  digitalWriteFast(20, HIGH);
-  digitalWriteFast(21, HIGH);
-  
-  while(true)
-  {
-    if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-    {
-       break; 
-    }
-    runAll();     
-  }  
-  digitalWriteFast(20, LOW);
-  digitalWriteFast(21, LOW);
-  beenReached = true;
-  //delay(200);
-}
-
-void sorterGrabber(int function)
-{
-   //int cmd = 7;
-  
-   //function 1 = pick up block, 0 = release
-  // if ( function == 0 || function == 1 ) {
-   //  Wire.write();
-  // }
-}
