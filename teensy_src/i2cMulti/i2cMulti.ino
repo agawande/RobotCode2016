@@ -312,8 +312,8 @@ void moveHere()
               break;
          case 7: 
               switch(function) {
-                case 0: sorterGrabber.moveTo(-110);
-                case 1: sorterGrabber.moveTo(110);
+                case 0: sorterGrabber.moveTo(-110); /*setSpeed() - try constant speed after this*/ break;
+                case 1: sorterGrabber.moveTo(110); break;
               }
               break;
       }

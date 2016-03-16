@@ -562,7 +562,7 @@ void deployGrabber()
 }
 
 void sendData()
-{  
+{
   //writes a 0 to the i2c bus
    Wire.write(state);
    //Cosmetic printing, the state 0 should be active for around 1 milisecond, so print the beginning for a new command cosmeticly
