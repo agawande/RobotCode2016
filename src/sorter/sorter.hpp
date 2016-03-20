@@ -1,22 +1,26 @@
+#include <iostream>
+
 using namespace std;
 
 int const SORTER_ADDRESS = 0x03;
 
-#define HOME 0
-#define D1 1
-#define D2 2
-#define D3 3
-#define D4 4
-#define D5 5
-#define D6 6
-#define D7 7
-#define D8 8
-#define PICKUP 9
-#define FIVE_IN 11
-#define SEVEN_IN 12
-//#define
-#define SMALL 0
-#define BIG 1
+#define DEPLOY_GRABBER  0
+#define ZAXIS           1
+#define DEPOSIT_HEIGHT  2
+#define SORT            3
+
+#define ENV_HEIGHT       0
+#define LOW_LOAD_HEIGHT  1
+#define MID_LOAD_HEIGHT  2
+#define HIGH_LOAD_HEIGHT 3
+
+#define RED     0
+#define YELLOW  1
+#define GREEN   2
+#define BLUE    3
+
+#define BIG   0
+#define SMALL 1
 
 class Sorter
 {
@@ -60,104 +64,30 @@ public:
     sorterState = 1;
   }
 
-  void goTo(string color, int lsw_middle)
-  {
-    if ( color == "blue" ) {
-       if ( lsw_middle == SMALL ) {
-         goToD1();
-       } else {
-         goToD5();
-       }
-    } else if (color == "green") {
-       if ( lsw_middle == SMALL ) {
-         goToD2();
-       } else {
-         goToD6();
-       }
-    } else if (color == "yellow") {
-       if ( lsw_middle == SMALL ) {
-         goToD3();
-       } else {
-         goToD7();
-       }
-    } else if (color == "red") {
-       if ( lsw_middle == SMALL ) {
-         goToD4();
-       } else {
-         goToD8();
-       }
-    }
+  void
+  zAxisTo(int height) {
+    sendCmd(ZAXIS, height);
   }
 
   void
-  goToPickUp()
-  {
-    sendCmd(PICKUP);
+  moveToDepositHeight() {
+    sendCmd(DEPOSIT_HEIGHT, 0);
   }
 
   void
-  goToD1()
-  {
-    sendCmd(D1);
+  sort(int type, int more, int color) {
+    sendCmdRaw(SORT, type, more, color);
   }
 
   void
-  goToD2()
-  {
-    sendCmd(D2);
+  sendCmd(int command, int dist){
+    i2c_sorter.sendData(msgFmt.buildMessage(command, dist));
+    msgFmt.updateKey();
   }
 
   void
-  goToD3()
-  {
-    sendCmd(D3);
-  }
-
-  void
-  goToD4()
-  {
-    sendCmd(D4);
-  }
-
-  void
-  goToD5()
-  {
-    sendCmd(D5);
-  }
-
-  void
-  goToD6()
-  {
-    sendCmd(D6);
-  }
-
-  void
-  goToD7()
-  {
-    sendCmd(D7);
-  }
-
-  void
-  goToD8()
-  {
-    sendCmd(D8);
-  }
-
-  void
-  dropGrabber()
-  {
-
-  }
-
-  void
-  toHeightBargeB()
-  {
-    sendCmd(FIVE_IN);
-  }
-
-  void
-  sendCmd(int command){
-    i2c_sorter.sendData(msgFmt.buildMessage(command, 0));
+  sendCmdRaw(int command, unsigned int data1, unsigned int data2, unsigned int data3) {
+    i2c_sorter.sendData(msgFmt.buildMessageRaw(command, data1, data2, data3));
     msgFmt.updateKey();
   }
 

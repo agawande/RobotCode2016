@@ -1,31 +1,25 @@
-using namespace std;
+//using namespace std;
 
 int const MULTI_ADDRESS = 0x05;
 
-#define CAGE_CONVEYER_1_ON     0
-#define CAGE_CONVEYER_1_OFF    1
-#define CAGE_CONVEYER_2_ON     2
-#define CAGE_CONVEYER_2_OFF    3
-#define CAGE_CONVEYER_3_ON     4
-#define CAGE_CONVEYER_3_OFF    5
-#define CAGE_CONVEYER_4_ON     6
-#define CAGE_CONVEYER_4_OFF    7
+#define MAIN 0
+#define BLUE 1
+#define GREEN 2
+#define YELLOW 3
+#define RED 4
+#define GRABBER_CONV 5
+#define COUPLER 6
+#define SORTER 7
 
-#define MAIN_CONVEYER_ON       8
-#define MAIN_CONVEYER_OFF      9
+#define OFF      0
+#define FWD      1
+#define REV      2
+#define SHUFFLE  3
 
-#define GRABBER_CONVEYER_ON   10
-#define GRABBER_CONVEYER_OFF  11
+#define COUPLE   1
+#define DECOUPLE 0
 
-#define CLAMPER_CLOSE         12
-#define CLAMPER_OPEN          13
-
-#define COUPLE                14
-#define DECOUPLE              15
-
-//Using distance for extra commands
-#define SORTER_GRABBER_PICK  1
-#define SORTER_GRABBER_DROP  2
+//#include <iostream>
 
 class MultiUtil
 {
@@ -37,100 +31,49 @@ public:
     }
 
   void
-  startMainConveyer()
+  controlConv(int device, int function)
   {
-    sendCmd(MAIN_CONVEYER_ON);
+    sendCmd(device, function);
   }
 
   void
-  stopMainConveyer()
+  couple()
   {
-    sendCmd(MAIN_CONVEYER_OFF);
+    sendCmd(COUPLER, COUPLE);
   }
 
   void
-  sorterPickUp()
+  deCouple()
   {
-    sendDistCmd(SORTER_GRABBER_PICK);
+    sendCmd(COUPLER, DECOUPLE);
   }
 
-  void
-  sorterDrop()
-  {
-    sendDistCmd(SORTER_GRABBER_DROP);
-  }
+  //void
+  //sorter
 
   void
-  startGrabberConveyer()
+  checkForCompletion()
   {
-    sendCmd(GRABBER_CONVEYER_ON);
+    while(1)
+    {
+      //Read the bus, it should be a 1 or a 0.
+      char buf[1];
+      if (read(i2c_multi.getFile(), buf, 1) == 1){
+        //store the byte into sorterState
+        sorterState = (int) buf[0];
+        //If 0 is return, Teensy finished tasked, and the loop
+        //can be broken out of, to continue with the process.
+        if (sorterState == 0){
+          //cosmetic stuff.
+          std::cout << "Received Completion Response" << endl;
+          break;
+        }
+      }
+    }
+    //ensure sorterState is 1 again
+    sorterState = 1;
   }
 
-  void
-  stopGrabberConveyer()
-  {
-    sendCmd(GRABBER_CONVEYER_OFF);
-  }
-
-  void
-  clampGrabber()
-  {
-    sendCmd(CLAMPER_CLOSE);
-  }
-
-  void
-  deClampGrabber()
-  {
-    sendCmd(CLAMPER_OPEN);
-  }
-
-  void
-  startConveyerI()
-  {
-    sendCmd(CAGE_CONVEYER_1_ON);
-  }
-
-  void
-  stopConveyerI()
-  {
-    sendCmd(CAGE_CONVEYER_1_OFF);
-  }
-
-  void
-  startConveyerII()
-  {
-    sendCmd(CAGE_CONVEYER_2_ON);
-  }
-
-  void
-  stopConveyerII()
-  {
-    sendCmd(CAGE_CONVEYER_2_OFF);
-  }
-
-  void
-  startConveyerIII()
-  {
-    sendCmd(CAGE_CONVEYER_3_ON);
-  }
-
-  void
-  stopConveyerIII()
-  {
-    sendCmd(CAGE_CONVEYER_3_OFF);
-  }
-
-  void
-  startConveyerIV()
-  {
-    sendCmd(CAGE_CONVEYER_4_ON);
-  }
-
-  void
-  stopConveyerIV()
-  {
-    sendCmd(CAGE_CONVEYER_4_OFF);
-  }
 
 private:
   void
@@ -139,17 +82,19 @@ private:
       if(dist == 1 || dist == 2) {
         i2c_multi.sendData(msgFmt.buildMessage(0, dist));
         msgFmt.updateKey();
+        //cout << "key: " << msgFmt.getKey() << endl;
       }
     }
   }
 
   void
-  sendCmd(int command){
-    i2c_multi.sendData(msgFmt.buildMessage(command, 0));
-    msgFmt.updateKey();
+  sendCmd(int command, unsigned int dist){
+      i2c_multi.sendData(msgFmt.buildMessage(command, dist));
+      msgFmt.updateKey();
   }
 
 private:
   I2CSetup i2c_multi;
   MessageFormatter msgFmt;
+  int sorterState;
 };

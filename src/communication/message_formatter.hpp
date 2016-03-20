@@ -1,3 +1,4 @@
+#include <bitset>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -107,6 +108,27 @@ private:
 
 public:
   unsigned int
+  buildMessageRaw(unsigned int command, unsigned int data1, unsigned int data2, unsigned int data3)
+  {
+    unsigned int headerBytes = 0;
+    unsigned int commandBytes = 0;
+    unsigned int dataBytes = 0;
+
+    headerBytes = buildHeader();
+    commandBytes = buildCommand(command);
+    dataBytes |= (data1 << 16);
+    dataBytes |= (data2 << 8);
+    dataBytes |= (data3);
+    bitset<32> x(dataBytes);
+
+    std::cout << "header " << headerBytes << endl;
+    std::cout << "command " << commandBytes << endl;
+    std::cout << "data " << x << endl;
+
+    return headerBytes | commandBytes | dataBytes;
+  }
+
+  unsigned int
   buildMessage(unsigned int command, unsigned int data)
   {
     unsigned int headerBytes = 0;
@@ -138,12 +160,17 @@ public:
   updateKey()
   {
     if(key < KEY_MAX){
-      (key)++;
+      key++;
     } else{
       key = KEY_MIN;
     }
   }
 
+  int
+  getKey()
+  {
+    return key;
+  }
 
 private:
   int i;

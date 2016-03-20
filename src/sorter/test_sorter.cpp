@@ -8,6 +8,7 @@ int main()
 {
   Sorter sorter;
 
-  sorter.toHeightBargeB();
-  //sorter.goToD8();
+  //sorter.sort(RED, BIG, 0);
+
+  sorter.sort(BIG, YELLOW, 1);
 }

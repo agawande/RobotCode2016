@@ -66,7 +66,7 @@ int main()
   //moveInFrontOfBargeBBlock1();
 
   //This should work for any barge, will change the name once I make sure
-  takeInBargeB();
+  takeInBarge(BARGE_B_COLS);
 
   return 0;
 }
@@ -92,66 +92,72 @@ void grabSet()
    multi.startGrabberConveyer();
 }
 
-void takeInBargeB()
+void takeInBarge(int cols)
 {
-  sorter.toHeightBargeB();
-  grabSet();  //grab one column
+    //according to parameter
+    //sorter.toHeightBargeB();
 
-  while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
-    multi.startMainConveyer();    //if it is already running?
-  }
-  multi.stopMainConveyer();
-  multi.stopGrabberConveyer();
+    for( int i=0; i < cols ) {
+      grabSet();  //grab one column
 
-  storeBlock();
+      while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
+        multi.startMainConveyer();    //if it is already running?
+      } //end of while
 
-  if (digitalRead(LSW_MIDDLE) == ON) {
-    //A small block was picked up, 3 blocks left or 1 small block and 1 large block left
-    while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_CORNER) == OFF) {
-      multi.startMainConveyer();
-    }
-    multi.stopMainConveyer();
+      multi.stopMainConveyer();
+      multi.stopGrabberConveyer();
 
-    storeBlock();
+      storeBlock();
 
-    while(digitalRead(LSW_CORNER) == OFF) {
-      multi.startMainConveyer();
-    }
-    multi.stopMainConveyer();
+      if (digitalRead(LSW_MIDDLE) == ON) {
+        //A small block was picked up, 3 blocks left or 1 small block and 1 large block left
+        while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_CORNER) == OFF) {
+          multi.startMainConveyer();
+        } //end of while
+        multi.stopMainConveyer();
 
-    storeBlock();
+        storeBlock();
 
-    if (digitalRead(LSW_MIDDLE) == ON) {
-       //1 small block left, else nothing left
-       while(digitalRead(LSW_CORNER) == OFF) {
-         multi.startMainConveyer();
-       }
-       multi.stopMainConveyer();
+        while(digitalRead(LSW_CORNER) == OFF) {
+          multi.startMainConveyer();
+        } //end of while
+        multi.stopMainConveyer();
 
-       storeBlock();
-    }
+        storeBlock();
 
-  } else {
-    //A large block was picked up
-    // Now either two small blocks are left or 1 big block
-    while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
-      multi.startMainConveyer();    //if it is already running?
-    }
-    multi.stopMainConveyer();
+        if (digitalRead(LSW_MIDDLE) == ON) {
+          //1 small block left, else nothing left
+          while(digitalRead(LSW_CORNER) == OFF) {
+            multi.startMainConveyer();
+          } //end of while
+          multi.stopMainConveyer();
 
-    storeBlock();
+          storeBlock();
+        }  //end of if
 
-    if (digitalRead(LSW_MIDDLE) == ON) {
-       //1 small block left, else nothing left
-       while(digitalRead(LSW_CORNER) == OFF) {
-         multi.startMainConveyer();
-       }
-       multi.stopMainConveyer();
+      } else {
+          //A large block was picked up
+          // Now either two small blocks are left or 1 big block
+          while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
+            multi.startMainConveyer();    //if it is already running?
+          }
+          multi.stopMainConveyer();
 
-       storeBlock();
-    }
-  }
-}
+          storeBlock();
+
+          if (digitalRead(LSW_MIDDLE) == ON) {
+            //1 small block left, else nothing left
+             while(digitalRead(LSW_CORNER) == OFF) {
+	       multi.startMainConveyer();
+	     }
+	     multi.stopMainConveyer();
+
+	    storeBlock();
+
+          }  //end of if
+       }  //end of if-else
+    } // End of for
+} //end of takeinbarge
 
 
 /*

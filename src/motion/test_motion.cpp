@@ -12,7 +12,8 @@ int main()
 
   //usleep(5000000);
 
-  //motion.moveForward(1000);
+  motion.moveForward(1000);
+  motion.moveForward(200);
 
   //usleep(5000000);
 
@@ -20,7 +21,7 @@ int main()
 
   //usleep(5000000);
 
-  motion.spinCW(90);
+  //motion.spinCW(90);
 
   //motion.moveQ2(1000);
 

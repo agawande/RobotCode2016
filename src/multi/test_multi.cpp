@@ -8,27 +8,17 @@ int main()
 {
   MultiUtil multi;
 
-  multi.startConveyerI();
+  //multi.controlConv(GRABBER_CONV, REV);
+  //multi.controlConv(MAIN, REV);
+  //multi.controlConv(BLUE, REV);
 
-  usleep(5000000);
+  //multi.couple();
 
-  multi.stopConveyerI();
+  //usleep(2000000);
 
-  multi.startConveyerII();
+  //multi.deCouple();
 
-  usleep(5000000);
-
-  multi.stopConveyerII();
-
-  multi.startConveyerIII();
-
-  usleep(5000000);
-
-  multi.stopConveyerIII();
-
-  multi.startConveyerIV();
-
-  usleep(5000000);
-
-  multi.stopConveyerIV();
+  //multi.controlConv(GRABBER_CONV, OFF);
+  //multi.controlConv(MAIN, OFF);
+  //multi.controlConv(BLUE, OFF);
 }
