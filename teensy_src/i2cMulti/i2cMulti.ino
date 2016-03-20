@@ -17,8 +17,8 @@ int state = 0;
 //SDA, pin 1
 
 //Cage Conveyers
-int C1D1 = 2;
-int C1D2 = 3;
+int C1D1 = 3;
+int C1D2 = 2;
 //PWM
 int CC1 = 27;   //i.e. conveyer of cage
 
@@ -27,8 +27,8 @@ int C2D2 = 6;
 //PWM
 int CC2 = 26;  //SPEED CONTROL
 
-int C3D1 = 8;
-int C3D2 = 9;
+int C3D1 = 9;
+int C3D2 = 8;
 //PWM
 int CC3 = 25;
 
@@ -38,8 +38,8 @@ int C4D2 = 12;
 int CC4 = 24;
 
 //Main Conveyer
-int MainConvD1 = 23;
-int MainConvD2 = 22;
+int MainConvD1 = 22;
+int MainConvD2 = 23;
 //PWM
 int MainConv = 16;
 
@@ -52,13 +52,13 @@ int GrabberConv = 18;
 //Remember to connect the STBY pin to a HIGH for the TB driver
 
 //Grabber Clamper Stepper
-int clamperDir = 17;
-int clamperPin = A7;  //Using analog pin - no digital pin left
+int clamperDir = 13;
+int clamperPin = A6;  //Using analog pin - no digital pin left
 
 AccelStepper clamper(1, clamperPin, clamperDir);  // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
 
-int sorterGrabberDir = 13;
-int sorterGrabberPin = A6;
+int sorterGrabberDir = 17;
+int sorterGrabberPin = A7;
 
 //int steps, int dir_pin, int step_pin
 //DRV8825 sorterGrabber(200, sorterGrabberDir, sorterGrabberPin);
@@ -74,6 +74,7 @@ int Coup2Dir = A2;
 int senseCoup2 = A1;
 
 boolean isCoupled = false;
+boolean isCompleted = false;
 
 void setup()
 {
@@ -82,8 +83,8 @@ void setup()
   //sorterGrabber.setMicrostep(1);
   */
   sorterGrabber.setMinPulseWidth(1);
-  sorterGrabber.setMaxSpeed(40);
-  sorterGrabber.setAcceleration(20);
+  sorterGrabber.setMaxSpeed(1000);
+  sorterGrabber.setAcceleration(1000);
   //sorterGrabber.setSpeed(20);
   //clamper.setMinPulseWidth(1);
   clamper.setMaxSpeed(40);
@@ -166,12 +167,19 @@ if (state == 0)
      //Whenever the Pi attempts to read the i2c line from the slave, that sends a request via i2c to the Teensy, when the Teensy receives a request,
      //the Teensy calls the sendData() functions, as shown from the Wire.onRequest(sendData); function from above. This 1 milisecond delay gives plenty of time for the
      //Raspberry Pi 2 to pick up that the move operation has been completed.
-     delay(1);
+     delay(100);
   }
   state = 1;
 
   //clamper.run();
+  Serial.println("sorter distance to go");
+  Serial.println(sorterGrabber.distanceToGo());
+  if(sorterGrabber.distanceToGo() == 0 && clamper.distanceToGo() == 0 && isCompleted) {
+    state = 0;
+    isCompleted = false;
+  }
   sorterGrabber.run();
+  
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -296,7 +304,7 @@ void moveHere()
       Serial.println(deviceID);
       Serial.println(function);
 
-
+      //!!!!!!!!!!!!!!!!!!!!!NEED FOR BLOCK GRABBER!!!!!!!!!!!!!!!!!!!!!!!!!!
       switch(deviceID) {
          case 0: convProcess(MainConvD2, MainConvD1, MainConv, function); break;
          case 1: convProcess(C1D1, C1D2, CC1, function); break;
@@ -312,8 +320,8 @@ void moveHere()
               break;
          case 7: 
               switch(function) {
-                case 0: sorterGrabber.moveTo(-110); /*setSpeed() - try constant speed after this*/ break;
-                case 1: sorterGrabber.moveTo(110); break;
+                case 0: sorterGrabber.moveTo(-110); isCompleted = true; break;  /*setSpeed() - try constant speed after this*/
+                case 1: sorterGrabber.moveTo(110); isCompleted = true; break;
               }
               break;
       }
@@ -322,7 +330,7 @@ void moveHere()
       Serial.println(" ? Waiting for completed command... ?");
       Serial.println(" ????????????????????????????????????");
       Serial.println(" ");
-      state = 0;
+      //state = 0;
 }
 
 void couple()
@@ -384,6 +392,7 @@ void controlCouplingMotors()
         break;
       }
   } //end of while
+  state = 0;
 }
 
  void convProcess(int convDir1, int convDir2, int convPin, int function) {
@@ -438,8 +447,9 @@ void controlCouplingMotors()
         delay(30);
       }*/
    }
-   Wire.begin(SLAVE_ADDRESS);
-   delay(1);
+   //state = 0;
+   //Wire.begin(SLAVE_ADDRESS);
+   //delay(1);
  }
 
 void sendData()
@@ -450,15 +460,6 @@ void sendData()
    if (state == 0) // && commandFinished)
    {
        Serial.println("Completed Command!");
-       Serial.println("  -----------------------------");
-       Serial.print(" | Current X Coordinate ");
-       Serial.println(" ");
-       Serial.print(" | Current Y Coordinate ");
-       Serial.println(" ");
-       Serial.println("  -----------------------------");
-       Serial.println("||||||||||||||||||||||||||||||||||||||||||||");
-       Serial.println(" ");
-
        //commandFinished = false;                                   //Reset these back to false, until a new command is received and decoded   
    }
 

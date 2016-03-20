@@ -5,36 +5,36 @@
 #define SLAVE_ADDRESS 0x03
 
 //Heights
-#define ENV_HEIGHT                1000
-#define LOW_LOAD_HEIGHT           1000
-#define MID_LOAD_HEIGHT           1000
-#define HIGH_LOAD_HEIGHT          1000
-#define COUPLING_HEIGHT           1000
-#define SORTER_GRAB_POSITION      1000
-#define SORTER_CLEARANCE          1000
-#define SMALL_BLOCK_CAGE_HEIGHT   1000
-#define DEPOSIT_HEIGHT            1000
+#define ENV_HEIGHT                -100
+#define LOW_LOAD_HEIGHT           0
+#define MID_LOAD_HEIGHT           -1750
+#define HIGH_LOAD_HEIGHT          -4050
+#define COUPLING_HEIGHT           0
+#define SORTER_GRAB_POSITION      -3150
+#define SORTER_CLEARANCE          -2500
+#define SMALL_BLOCK_CAGE_HEIGHT   -2650
+#define DEPOSIT_HEIGHT            -3800
 
 //Sorter positions
 #define XHOME              0
 #define YHOME              0
-#define LARGE_RED_X     1000
-#define LARGE_RED_Y     1000
-#define LARGE_YELLOW_X  1000
-#define LARGE_YELLOW_Y  1000
-#define LARGE_GREEN_X   1000
-#define LARGE_GREEN_Y   1000
-#define LARGE_BLUE_X    1000
-#define LARGE_BLUE_Y    1000
+#define LARGE_RED_X     -75
+#define LARGE_RED_Y     8000
+#define LARGE_YELLOW_X  -75
+#define LARGE_YELLOW_Y  13500
+#define LARGE_GREEN_X   -75
+#define LARGE_GREEN_Y   18800
+#define LARGE_BLUE_X    -75
+#define LARGE_BLUE_Y    24000
 
-#define SMALL_RED_X     1000
-#define SMALL_RED_Y     1000
-#define SMALL_YELLOW_X  1000
-#define SMALL_YELLOW_Y  1000
-#define SMALL_GREEN_X   1000
-#define SMALL_GREEN_Y   1000
-#define SMALL_BLUE_X    1000
-#define SMALL_BLUE_Y    1000
+#define SMALL_RED_X     -1169
+#define SMALL_RED_Y     8000
+#define SMALL_YELLOW_X  -1169
+#define SMALL_YELLOW_Y  13500
+#define SMALL_GREEN_X   -1169
+#define SMALL_GREEN_Y   18000
+#define SMALL_BLUE_X    -1169
+#define SMALL_BLUE_Y    24000
 
 //Colors
 #define RED      0
@@ -59,7 +59,7 @@ boolean beenReached = false;
 
 AccelStepper stepperX(1,14,15); // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
 AccelStepper stepperY(1,16,17); // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
-AccelStepper stepperZ(1,11,12); // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
+AccelStepper stepperZ(1,12,11); // AccelStepper::DRIVER (3 pins) on (Driver Setting is (1), Step pin, Direction pin)
 
 void setup()
 {  
@@ -76,13 +76,15 @@ void setup()
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
   Wire.onRequest(sendData); 
-  stepperX.moveTo(100);
+
+  //delay(5000);
+  //goToPosition(SMALL_RED_X,SMALL_RED_Y);
   //stepperY.moveTo(10000);
 }
 
 void loop()
 {
-  digitalWriteFast(20, HIGH);
+ // digitalWriteFast(20, LOW);
     //if (stepperY.distanceToGo() == 0)
       // stepperY.moveTo(-stepperY.currentPosition());
 //  if (stop == true)
@@ -146,7 +148,7 @@ void loop()
   //Return back to state 1
   state = 1;
   //The runAll function is repeatedly ran, this function branches out to the rest of the functions
-  // runAll();
+  runAll();
 }
 
 void motorSetup(void)
@@ -165,8 +167,8 @@ void motorSetup(void)
   //Sleep Pin for X
   digitalWriteFast(20, LOW);
  
-  stepperX.setMaxSpeed(11000);
-  stepperX.setAcceleration(11000);
+  stepperX.setMaxSpeed(5000);
+  stepperX.setAcceleration(5000);
   
   //Step settings for Y Motor
   pinMode(5, OUTPUT); //M0
@@ -182,8 +184,8 @@ void motorSetup(void)
   //Sleep Pin for Y
   digitalWriteFast(21, LOW);
   
-  stepperY.setMaxSpeed(1000000);
-  stepperY.setAcceleration(800000);
+  stepperY.setMaxSpeed(100000);
+  stepperY.setAcceleration(80000);
   
   //Step settings for Z Motor
   pinMode(2, OUTPUT); //M0
@@ -345,7 +347,7 @@ void moveHere()
       //Wire.write(dataToBeSent);
 
       Serial.println("Command Decoded:");
-      Serial.print(directions, HEX);
+      Serial.println(directions, HEX);
 
       switch(directions) {
         case 0: deployGrabber(); break;
@@ -359,11 +361,13 @@ void moveHere()
              break;
         case 2: moveToDepositHeight(); break;
         case 3: 
+             Serial.println("type");
+             Serial.println(type);
              switch(type) {
                 case 0:
                    switch(color) {
                      case RED: sortLarge(LARGE_RED_X,LARGE_RED_Y, more); break;
-                     case YELLOW: sortLarge(LARGE_YELLOW_X,LARGE_YELLOW_Y, more); break;
+                     case YELLOW: Serial.println("yellow big"); sortLarge(LARGE_YELLOW_X,LARGE_YELLOW_Y, more); break;
                      case GREEN: sortLarge(LARGE_GREEN_X,LARGE_GREEN_Y, more); break;
                      case BLUE: sortLarge(LARGE_BLUE_X,LARGE_BLUE_Y, more); break;
                    }
@@ -409,28 +413,61 @@ void goToPosition(int x, int y)
   beenReached = true;
 }
 
+void waitForTeensy2(){
+  Serial.println("sdkhbv");
+  Wire.beginTransmission(0x05);
+  Wire.requestFrom(0x05, 1);    // request 1 byte from Teensy++2
+  Serial.println("sdkhbv");
+
+
+//  while (Wire.available()) { // slave may send less than requested
+    //char x = Wire.read();
+    //Serial.println((int) x);
+    while(Wire.read() != 0) {
+      //break;
+       Wire.beginTransmission(0x05);
+       Wire.requestFrom(0x05, 1);
+    }
+  //}
+  Serial.println("sdkhbv");
+}
+
 void sortLarge(int x, int y, int more)
 {
    //For 10 inch tier we have to go down first
    if (stepperZ.currentPosition() > MID_LOAD_HEIGHT) {
       zAxisTo(MID_LOAD_HEIGHT);
    }
-
+   
    //Go to the pick up location
    goToPosition(XHOME, YHOME);
 
+   delay(50);
+
    //Raise Z to correct height to pick up
    zAxisTo(SORTER_GRAB_POSITION);
-     
+
+   delay(50);
+   
    sorterGrab();
+   waitForTeensy2();
+
+   delay(50);   
 
    //Lower it a bit to sort
    zAxisTo(SORTER_CLEARANCE);
 
+   delay(50);
+
    goToPosition(x, y);
+
+   delay(50);
    
    sorterDrop();
-   
+   waitForTeensy2();
+
+   delay(50);
+      
    //Go back to the pick up location
    goToPosition(XHOME, YHOME);
 
