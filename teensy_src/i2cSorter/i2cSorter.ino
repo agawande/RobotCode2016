@@ -11,7 +11,7 @@
 #define HIGH_LOAD_HEIGHT          -4050
 #define COUPLING_HEIGHT           0
 #define SORTER_GRAB_POSITION      -3150
-#define SORTER_CLEARANCE          -2500
+#define SORTER_CLEARANCE          -2400
 #define SMALL_BLOCK_CAGE_HEIGHT   -2650
 #define DEPOSIT_HEIGHT            -3800
 
@@ -85,43 +85,7 @@ void setup()
 void loop()
 {
  // digitalWriteFast(20, LOW);
-    //if (stepperY.distanceToGo() == 0)
-      // stepperY.moveTo(-stepperY.currentPosition());
-//  if (stop == true)
-//  {
-//  deposit1();
-//  deposit2();
-//  deposit3();
-//  deposit4();
-//  deposit5();
-//  deposit6();
-//  deposit7();
-//  deposit8();
-//  homePos();
-//  }
-//  
-//  stop = false;
-      
-//      if (stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-//      {
-//      
-//        if (stop == true)
-//        {
-//          delay(1000);
-//          stepperX.moveTo(0);
-//          stepperY.moveTo(0);
-//          stop = false;
-//        }
-//        
-//        else if (stop == false && stepperX.distanceToGo() == 0 && stepperY.distanceToGo() == 0)
-//        {
-//          digitalWriteFast(20, LOW);
-//          digitalWriteFast(21, LOW);
-//        }
-//      }
-//
-//    stepperX.run();
-//    //make State 1
+ //    //make State 1
   state = 1;
   
   //Whenever the distance to go reaches zero for both motors
@@ -199,7 +163,7 @@ void motorSetup(void)
   digitalWriteFast(3, HIGH); //M1
   digitalWriteFast(4, LOW); //M2
   //Sleep Pin for Z
-  digitalWriteFast(22, LOW);
+  digitalWriteFast(22, HIGH);
     
   stepperZ.setMaxSpeed(8000);
   stepperZ.setAcceleration(10000); 
@@ -366,10 +330,12 @@ void moveHere()
              switch(type) {
                 case 0:
                    switch(color) {
-                     case RED: sortLarge(LARGE_RED_X,LARGE_RED_Y, more); break;
+                     Serial.println("color");
+                     Serial.println(color);
+                     case RED: Serial.println("red"); sortLarge(LARGE_RED_X,LARGE_RED_Y, more); break;
                      case YELLOW: Serial.println("yellow big"); sortLarge(LARGE_YELLOW_X,LARGE_YELLOW_Y, more); break;
-                     case GREEN: sortLarge(LARGE_GREEN_X,LARGE_GREEN_Y, more); break;
-                     case BLUE: sortLarge(LARGE_BLUE_X,LARGE_BLUE_Y, more); break;
+                     case GREEN: Serial.println("green"); sortLarge(LARGE_GREEN_X,LARGE_GREEN_Y, more); break;
+                     case BLUE: Serial.println("blue"); sortLarge(LARGE_BLUE_X,LARGE_BLUE_Y, more); break;
                    }
                    break;
                 case 1:
@@ -414,30 +380,33 @@ void goToPosition(int x, int y)
 }
 
 void waitForTeensy2(){
-  Serial.println("sdkhbv");
+  Serial.println("Enter wait for teensy");
   Wire.beginTransmission(0x05);
   Wire.requestFrom(0x05, 1);    // request 1 byte from Teensy++2
-  Serial.println("sdkhbv");
-
-
-//  while (Wire.available()) { // slave may send less than requested
-    //char x = Wire.read();
-    //Serial.println((int) x);
-    while(Wire.read() != 0) {
-      //break;
+  Serial.println("Requested");
+    byte x =1;
+  
+    while(x != 0) {
        Wire.beginTransmission(0x05);
        Wire.requestFrom(0x05, 1);
+       x = Wire.read();
+       Serial.println(x);
+       delay(2);
     }
-  //}
-  Serial.println("sdkhbv");
+
+  Serial.println("Done waiting");
+  Wire.begin(SLAVE_ADDRESS);
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(sendData);
 }
 
 void sortLarge(int x, int y, int more)
 {
    //For 10 inch tier we have to go down first
-   if (stepperZ.currentPosition() > MID_LOAD_HEIGHT) {
-      zAxisTo(MID_LOAD_HEIGHT);
-   }
+   //all positions in negative
+   //if (stepperZ.currentPosition() < MID_LOAD_HEIGHT) {
+   //   zAxisTo(MID_LOAD_HEIGHT);
+   //}
    
    //Go to the pick up location
    goToPosition(XHOME, YHOME);
@@ -452,7 +421,7 @@ void sortLarge(int x, int y, int more)
    sorterGrab();
    waitForTeensy2();
 
-   delay(50);   
+   delay(50);
 
    //Lower it a bit to sort
    zAxisTo(SORTER_CLEARANCE);
@@ -471,10 +440,10 @@ void sortLarge(int x, int y, int more)
    //Go back to the pick up location
    goToPosition(XHOME, YHOME);
 
-   if (more == 1) {
+   //if (more == 1) {
      //Move back to grab more blocks
-     zAxisTo(SORTER_GRAB_POSITION);
-   }
+   //  zAxisTo(SORTER_GRAB_POSITION);
+  // }
 }
 
 void sortSmall(int x, int y, int more)
@@ -522,6 +491,7 @@ void sortSmall(int x, int y, int more)
 }
 
 void zAxisTo(int z) {
+   
    stepperZ.moveTo(z);
    while(true)
    {
@@ -536,25 +506,30 @@ void zAxisTo(int z) {
 void sorterGrab()
 {
 	//device id is 7, function is 0
-  sendCmdMulti(0x07, 0xF0);
+  sendCmdMulti(0x07, 0x00);
 }
 
 void sorterDrop()
 {
 	//device id is 7, function is 1
-  sendCmdMulti(0x07, 0xF1);
+  sendCmdMulti(0x07, 0x01);
 }
 
 void sendCmdMulti(byte cmdMask, byte functMask)
 {
     dataToBeSent[0] = dataReceived[0] & 0xF0;
     dataToBeSent[0] = dataToBeSent[0] | cmdMask;
+    
     //Set distance 1, 2 as zero
     dataToBeSent[1] = dataReceived[1] & 0xF0;
     dataToBeSent[2] = dataReceived[2] & 0xF0;
 
-    dataToBeSent[3] = dataReceived[3] & functMask;
-    
+    dataToBeSent[3] = dataReceived[3] & 0xF0;
+    dataToBeSent[3] = dataToBeSent[3] | functMask;
+
+    for(int i=0; i<4; i++){
+      Serial.println(dataToBeSent[i]);
+    }
 	
 	  Wire.beginTransmission(0x05);
   

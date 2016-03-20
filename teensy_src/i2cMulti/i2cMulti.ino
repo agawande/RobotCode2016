@@ -150,10 +150,10 @@ void loop()
   //sorterGrabber.run();
   //sleep for 1ms to relenquish the processor
   //delay(1);
-//  Serial.println(analogRead(senseCoup1));
-//  Serial.println(analogRead(senseCoup2));
-//  DeCouple();
-if (state == 0)
+  //  Serial.println(analogRead(senseCoup1));
+  //  Serial.println(analogRead(senseCoup2));
+  //  DeCouple();
+  if (state == 0)// && isCompleted)
   {
     Serial.println("Completed command");
      //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
@@ -167,19 +167,19 @@ if (state == 0)
      //Whenever the Pi attempts to read the i2c line from the slave, that sends a request via i2c to the Teensy, when the Teensy receives a request,
      //the Teensy calls the sendData() functions, as shown from the Wire.onRequest(sendData); function from above. This 1 milisecond delay gives plenty of time for the
      //Raspberry Pi 2 to pick up that the move operation has been completed.
-     delay(100);
+     delay(200);
   }
-  state = 1;
+  
 
   //clamper.run();
-  Serial.println("sorter distance to go");
-  Serial.println(sorterGrabber.distanceToGo());
-  if(sorterGrabber.distanceToGo() == 0 && clamper.distanceToGo() == 0 && isCompleted) {
+  //Serial.println("sorter distance to go");
+  //Serial.println(sorterGrabber.distanceToGo());
+  if(sorterGrabber.distanceToGo() == 0 && clamper.distanceToGo() == 0 && isCompleted && state == 1) {
     state = 0;
     isCompleted = false;
   }
+  //sorterGrabber.runSpeed();
   sorterGrabber.run();
-  
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -264,7 +264,7 @@ void receiveEvent (int numBytes)
     else
     {  
       Serial.println("Robost check fail");
-        //Wire.write(state);
+        //Wire.write(1);
         //Serial.println("Keys or Ordering of Bits to dont match");
     }   
  } 
@@ -318,11 +318,14 @@ void moveHere()
                 case 1: couple(); break;
               }
               break;
-         case 7: 
+         case 7:
               switch(function) {
-                case 0: sorterGrabber.moveTo(-110); isCompleted = true; break;  /*setSpeed() - try constant speed after this*/
-                case 1: sorterGrabber.moveTo(110); isCompleted = true; break;
+                case 0: /*sorterGrabber.setSpeed(10000);*/ state  = 1; sorterGrabber.moveTo(-110); delay(10); isCompleted = true; break;  /*setSpeed() - try constant speed after this*/
+                case 1: /*sorterGrabber.setSpeed(10000);*/ state = 1; sorterGrabber.moveTo(110); delay(10); isCompleted = true; break;
               }
+              Wire.begin(SLAVE_ADDRESS);
+              Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
+              Wire.onRequest(sendData);
               break;
       }
       Serial.println(" ");
@@ -457,10 +460,10 @@ void sendData()
   //writes a 0 to the i2c bus
    Wire.write(state);
    //Cosmetic printing, the state 0 should be active for around 1 milisecond, so print the beginning for a new command cosmeticly
-   if (state == 0) // && commandFinished)
+   if (state == 0 && isCompleted)
    {
        Serial.println("Completed Command!");
-       //commandFinished = false;                                   //Reset these back to false, until a new command is received and decoded   
+       isCompleted = false;
    }
 
    //reset the numberOfByteReceived to 0, so that the bytes can remain in order.
