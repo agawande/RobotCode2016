@@ -6,11 +6,15 @@ using namespace std;
 
 int main () {
    string fileName = "hello";
+
    CourseReader cR(fileName);
 
-   (cR.next()).print();
-   (cR.next()).print();
-   (cR.next()).print();
+   (cR.next())->print();
+   (cR.next())->print();
+   (cR.next())->print();
+   (cR.next())->print();
 
-   (cR.atIndex(1)).print();
+   (cR.atIndex(1))->print();
+
+   cR.atIndex(3)->print();
 }

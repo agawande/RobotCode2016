@@ -27,16 +27,12 @@ void Complex::setOrient(int orient) {
   this->orient = orient;
 }
 
-/*void Complex::setReal(int real) {
-	this->real = real;
-}
-
-void Complex::setImag(int imag) {
-	this->imag = imag;
-}*/
-
 void Complex::print() {
-  cout << this->getIndex() << ", " << this->getX() << ", " << this->getY() << ", " << this->getOrient() << endl;
+  if (this != 0) {
+    cout << this->getIndex() << ", " << this->getX() << ", " << this->getY() << ", " << this->getOrient() << endl;
+  } else {
+    cout << "null pointer" <<  endl;
+  }
 }
 
 //complex &add //return by value

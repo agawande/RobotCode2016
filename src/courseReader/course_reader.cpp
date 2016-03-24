@@ -16,42 +16,59 @@ CourseReader::CourseReader( string &fileN )
  : fileStream(fileN.c_str())
 {
   setFileName(fileN);
+  readFileIntoArray();
 }
 
 CourseReader::~CourseReader()
 {
+  delete complexArray;
+}
+
+void
+CourseReader::readFileIntoArray()
+{
+  while (getline(fileStream, nextLine)) {
+    ++numLines;
+  }
+
+  fileStream.clear();
+  fileStream.seekg(0);
+
+  complexArray = new Complex*[numLines];
+
+  numLines = 0;
+
+  while (getline(fileStream, nextLine)) {
+     complexArray[numLines] = processLine(nextLine);
+     numLines++;
+  }
+
   fileStream.close();
 }
 
-Complex
+Complex*
+CourseReader::atIndex(int index) {
+   if(index <= numLines && index >= 0) {
+     return complexArray[index];
+   }
+   cout << "Index does not exists" << endl;
+   return 0;
+}
+
+Complex*
 CourseReader::next() {
-  getline(fileStream, nextLine);
-
-  //lineNum++;
-  return processLine(nextLine);
+   if( currentLine <= numLines && currentLine >= 0) {
+     if(currentLine == numLines) {
+       return complexArray[currentLine];
+     } else {
+       return complexArray[currentLine++];
+     }
+   }
+   cout << "No more next, End of file" << endl;
+   return 0;
 }
 
-Complex
-CourseReader::atIndex( int index ) {
-  int i = 0;
-  ifstream infile(fileName.c_str());
-
-  string str;
-  while (std::getline(infile, str))
-  {
-    if(i == index){
-        Complex a = processLine(str);
-
-        infile.close();
-        return a;
-    }
-    i++;
-  }
-  //close stream
-  infile.close();
-}
-
-Complex
+Complex*
 CourseReader::processLine(string line) {
   string myArray[4];
 
@@ -69,10 +86,8 @@ CourseReader::processLine(string line) {
     }
   }
 
-  Complex a(vect.at(0), vect.at(1), vect.at(2), vect.at(3));
-  return a;
+  return new Complex(vect.at(0), vect.at(1), vect.at(2), vect.at(3));
 }
-
 
 void
 CourseReader::setFileName(string &fileN) {
