@@ -1,7 +1,0 @@
-Proper code for QR code, just in case we need it.
-
-Using ZBAR and OpenCV.
-
-./a.out qrcode2.jpg
-
-http://blog.ayoungprogrammer.com/2014/04/real-time-qr-code-bar-code-detection.html
