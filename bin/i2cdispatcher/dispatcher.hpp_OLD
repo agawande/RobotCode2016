@@ -1,0 +1,38 @@
+using namespace std;
+
+const unsigned int MULTI_ADDRESS = 0x05;
+
+class I2Cdispatcher
+{
+   public: //Constructors
+      I2Cdispatcher(unsigned int i2cAddress) : i2cAddress(i2cAddress), msgFmt() { i2c_multi(MULTI_ADDRESS); }
+
+   public: //Getters & Setters
+      unsigned int getI2Caddress();
+      void setI2Caddress(unsigned int myAddress);
+
+   public: //Public methods
+      void sendMessage(unsigned int i2cAddress, unsigned int message);
+
+   private:
+  void
+  sendDistCmd(unsigned int dist){
+    if(msgFmt.checkData(dist) == GOOD){
+      if(dist == 1 || dist == 2) {
+        i2c_multi.sendData(msgFmt.buildMessage(0, dist));
+        msgFmt.updateKey();
+      }
+    }
+  }
+
+  void
+  sendCmd(int command){
+    i2c_multi.sendData(msgFmt.buildMessage(command, 0));
+    msgFmt.updateKey();
+  }
+
+   private:
+      i2cAddress = UNDEFINED;   
+  I2CSetup i2c_multi;
+  MessageFormatter msgFmt;
+};

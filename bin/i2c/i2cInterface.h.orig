@@ -1,0 +1,139 @@
+#define SHIFT_BYTE = 8
+#define SHIFT_2BITS = 2
+#define INT_BYTES = 4
+#define SLEEP_TIME = 2000;
+
+
+/************************************************************
+ * The key will be binary OR'd will other values to build   *
+ * each I2C messages. The key is used to ensure data        *
+ * integrity.                                               *
+ *                                                          * 
+ * The KEY cycles from MIN to MAX in increments of INCREMENT*
+ * Settings of MIN = 0, MAX = 48, INCREMENT = 16 gives us   *
+ * 4 unique keys to cycle through                           *
+ ***********************************************************/
+
+unsigned int data = 0;
+unsigned int data_mask = 251658240; // 0b00001111000000000000000000000000;
+
+unsigned int buildHeader(unsigned int& key)
+{
+   unsigned int header = 0;
+   unsigned int functionCode = 0;
+   unsigned int functionCodeIncrementAmount = 4;
+
+   for( int i = 0; i < INT_BYTES; i++)
+   {
+      header = functionCode | key;
+      header = header << SHIFT_BYTE; 
+ 
+      // Update function Code, last update is wasted (done on purpose to save cycles)
+      functionCode += functionCodeIncrementAmount;
+      
+   } 
+}
+
+
+char KEY_INCREMENT = 16;
+char KEY_MIN       = 0;
+char KEY_MAX       = 48;
+
+// Initialize key to minimum value
+char key = 0;
+key = 'a';
+
+// Direction masks
+char FORWARD     = 1; // 0b00000001;
+char REVERSE     = 2; // 0b00000010;
+char PIVOT_RIGHT = 3; // 0b00000011;
+char PIVOT_LEFT  = 4; // 0b00000100;
+
+
+unsigned int MOTOR_DRIVER_ADDRESS = 25;
+
+char buildDirectionMessage( char*, char* );
+unsigned int buildDistanceMessage( unsigned int*, char* );
+unsigned int buildI2CMessage( char, unsigned int);
+void updateKey( char* );
+
+// 'direction' needs to match one of the direction masks defined above!!
+char buildDirectionMessage( char &direction, char &key )
+{
+   // Function code is 00 for direction, so no need to explicitly build it
+   return key | direction;
+}
+
+/***********************************************************
+ * Distance is measured in millimeters. It is built using  *
+ * least significant nibbles across 3 bytes. The most      *
+ * significant nibbles are headers which are composed of   *
+ * function and the I2C key. Because we are only using     *
+ * 3 nibbles (12 bits), the maximum distance that can be   *
+ * represented is is 4095mm. If the nibbles from each byte *
+ * are labeled byte_1, byte_2, byte_3, and say the         *
+ * distance we want to travel is...(ADD EXAMPLE)...        *
+ *                                                         *
+ * The distancebytes is composed of 3 nibbles. These       * 
+ * nibbles are arranged in sequential order using the      *
+ * function codes of 01, 10, and 11. The the decimal       *
+ * equivalent of these values are 64, 128, and 192 which   *
+ * which just so happens to be in increments of 64.        *
+ **********************************************************/
+unsigned int buildDistanceMessage( unsigned int &distance, char &key )
+{
+   // Start building from 3nd nibble from the right and then build towards the right
+   int msgBytes         = 3; 
+
+   char functionCode            = 0;  // 0b00000000;
+   char functionCodeMin         = 64; // 0b01000000;
+   unsigned int shiftNibble     = 4;
+   unsigned int shiftByte       = 8;
+   unsigned int header          = 0;        // 0b00000000000000000000000000000000;
+   unsigned int distanceMessage = 0;        // 0b00000000000000000000000000000000;
+   unsigned int distMask        = 3840;     // 0b00000000000000000000111100000000;
+   unsigned int hdrMask         = 15728640; // 0b00000000111100000000000000000000;
+   unsigned int bytemask        = 16711680; // 0b00000000111111110000000000000000;
+
+   char functionCode = functionCodeMin;  // 0b01000000;
+   
+   for( i = 0; i < msgBytes; i++)
+   {
+      functionCode += functionCodeMin;
+
+      // Build Header
+      header = unsigned int(functionCode | key) << (shiftByte * i);
+
+      // Grab most significant nibble from distance parameter (max dist = 4095)
+      distanceMessage = distance & distMask;
+
+      // Shift distMask to the right for the next iteration
+      distMask = distMask >> shiftNibble;
+
+
+      // Update function code
+      functionCode += functionCodeMin;
+      
+      
+         
+   }
+   char distanceMSB = 0b00000000 | key | 
+}
+
+unsigned int buildI2CMessage( char direction, unsigned int distance )
+{
+   return direction | distance;
+}
+
+void updateKey(char &key)
+{
+   if ( key < KEY_MAX )
+   {
+      key += KEY_INCREMENT;
+   }
+   else
+   {
+      key = KEY_MIN;
+   }
+
+}

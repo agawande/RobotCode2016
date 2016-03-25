@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project(idColor)
+find_package( OpenCV REQUIRED )
+add_executable( idColor idColor.cpp )
+target_link_libraries( idColor ${OpenCV_LIBS} )
+SET(CMAKE_CXX_FLAGS "-pthread -I/usr/local/include -L/usr/local/lib -lwiringPi")
