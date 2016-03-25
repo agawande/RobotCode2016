@@ -1,5 +1,5 @@
 #ifndef SORTER_HPP
-#define CONVEYER_HPP
+#define SORTER_HPP
 
 #include <iostream>
 #include "i2cdispatcher.hpp"
@@ -42,7 +42,7 @@ class Sorter
   private:
 
      //Private variables
-     int address;
+     const int address;
 
      //Private objects
      I2cDispatcher i2cDispatcher;;

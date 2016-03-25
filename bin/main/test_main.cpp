@@ -8,4 +8,7 @@ int main()
 {
   Conveyer mainConv(MULTI_ADDRESS, 0);
 
+  mainConv.moveForward();
+
+  Grabber grabber();
 }
