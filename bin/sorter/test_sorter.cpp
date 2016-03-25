@@ -1,5 +1,3 @@
-#include "../communication/i2c_setup.hpp"
-#include "../communication/message_formatter.hpp"
 #include "sorter.hpp"
 
 using namespace std;

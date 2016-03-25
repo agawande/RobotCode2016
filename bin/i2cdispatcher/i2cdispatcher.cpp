@@ -13,8 +13,8 @@
 using namespace std;
 
 int I2cDispatcher::getFile()
-{ 
-   return file; 
+{
+   return file;
 } //getFile()
 
 
@@ -67,3 +67,40 @@ void I2cDispatcher::sendData(unsigned int data)
       }
    }
 } //sendData()
+
+
+void I2cDispatcher::checkForCompletion()
+{
+   while(1) {
+
+      //Read the bus, it should be a 1 or a 0.
+      char buf[1];
+
+      if (read(file, buf, 1) == 1)
+      {
+         //store the byte into sorterState
+         state = (int) buf[0];
+
+         //If 0 is return, Teensy finished tasked, and the loop
+         //can be broken out of, to continue with the process.
+         if (state == 0)
+         {
+            //cosmetic stuff.
+            std::cout << "Received Completion Response" << endl;
+            break;
+         }
+      }
+   }
+   state = 1;
+} //check for completion
+
+
+int I2cDispatcher::checksorterState()
+{
+   char buf[1];
+   if (read(file, buf, 1) == 1){
+      state = (int) buf[0];
+   }
+   return state;
+}
+

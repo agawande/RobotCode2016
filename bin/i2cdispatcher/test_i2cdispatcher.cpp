@@ -10,7 +10,7 @@ int main()
 
   unsigned int msg1 = 3000;
   unsigned int msg2 = 389400;
- 
+
   I2cDispatcher i2c_motion(MOTION_ADDRESS);
 
   i2c_motion.sendData(msg1);
