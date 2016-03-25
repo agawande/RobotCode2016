@@ -7,8 +7,6 @@
 
 using namespace std;
 
-int const SORTER_ADDRESS = 0x03;
-
 #define DEPLOY_GRABBER  0
 #define ZAXIS           1
 #define DEPOSIT_HEIGHT  2
@@ -32,7 +30,7 @@ class Sorter
   public:
 
       //Constructors
-      Sorter() : i2cDispatcher(SORTER_ADDRESS) {}
+      Sorter(const int myAddress) : address(myAddress), i2cDispatcher(address) {}
 
       //public methods
       void zAxisTo( int );
@@ -42,6 +40,9 @@ class Sorter
       void sendCmdRaw( int , unsigned int , unsigned int , unsigned int );
 
   private:
+
+     //Private variables
+     int address;
 
      //Private objects
      I2cDispatcher i2cDispatcher;;

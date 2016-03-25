@@ -10,5 +10,5 @@ int main()
 
   //sorter.sort(RED, BIG, 0);
 
-  sorter.sort(BIG, YELLOW, 1);
+  sorter.sort(BIG, 1, YELLOW);
 }

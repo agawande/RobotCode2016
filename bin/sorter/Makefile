@@ -3,7 +3,7 @@ TEST_PROGRAM = test_$(PROGRAM)
 
 CC = g++
 
-ROOT_DIR    = /home/pi/Desktop/RobotCode2016
+ROOT_DIR    = /home/pi/workspace/robot
 
 BIN_DIR     = $(ROOT_DIR)/bin
 INCLUDE_DIR = $(ROOT_DIR)/include
