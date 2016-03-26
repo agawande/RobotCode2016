@@ -6,11 +6,11 @@
 
 using namespace std;
 
-const unsigned int RED_DEVICE_ID       = 0;
-const unsigned int YELLOW_DEVICE_ID    = 1;
-const unsigned int GREEN_DEVICE_ID     = 2;
-const unsigned int BLUE_DEVICE_ID      = 3;
-const unsigned int COUPLING_DEVICE_ID  = 4;
+const unsigned int RED_DEVICE_ID       = 0; // DO NOT CHANGE!!!!
+const unsigned int BLUE_DEVICE_ID      = 2; // DO NOT CHANGE!!!!
+const unsigned int GREEN_DEVICE_ID     = 3; // DO NOT CHANGE!!!!
+const unsigned int YELLOW_DEVICE_ID    = 4; // DO NOT CHANGE!!!!
+const unsigned int COUPLING_DEVICE_ID  = 6; // DO NOT CHANGE!!!!
 
 class Cage
 {
