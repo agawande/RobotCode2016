@@ -1,3 +1,0 @@
-/home/pi/workspace/robot/bin/camera/CMakeFiles/captureImage.dir
-/home/pi/workspace/robot/bin/camera/CMakeFiles/idColor.dir
-/home/pi/workspace/robot/bin/camera/CMakeFiles/imageHarness.dir

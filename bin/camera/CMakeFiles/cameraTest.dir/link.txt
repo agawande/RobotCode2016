@@ -1,1 +1,0 @@
-/usr/bin/c++   -pthread -I/usr/local/include -L/usr/local/lib -lwiringPi    CMakeFiles/cameraTest.dir/cameraTest.cpp.o  -o cameraTest -rdynamic 

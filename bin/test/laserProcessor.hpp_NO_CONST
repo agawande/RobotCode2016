@@ -1,0 +1,122 @@
+#ifndef LASER_H
+#define LASER_H
+
+#include <stdio.h>
+#include <time.h>
+#include <opencv2/core/core.hpp>
+
+using namespace cv;
+
+
+/*****************************************************************************
+ *                      LASER MASK HSV RANGES                                *
+ *                                                                           *
+ *  NOTE:                                                                    *
+ *   1) Using a red laser so must use Upper & Lower Ranges                   *
+ *   2) Laser has high intensity (i.e. ~white) at brighter or closer objects *
+ *   3) Must bitwise_or() upper and lower ranges as well as high intensity   *
+ *****************************************************************************/
+
+//------------ RED LASER HSV -------------
+// Hue Limits for Upper Range
+#define LASER_RED_UH_MAX  180
+#define LASER_RED_UH_MIN  165
+
+// Saturation Limits for Upper Range
+#define LASER_RED_US_MAX  255
+#define LASER_RED_US_MIN  0
+
+// Value Limits for Upper Range
+#define LASER_RED_UV_MAX  255
+#define LASER_RED_UV_MIN  178
+
+// Hue Limits for Lower Range
+#define LASER_RED_LH_MAX  10
+#define LASER_RED_LH_MIN  0
+
+// Saturation Limits for Lower Range
+#define LASER_RED_LS_MAX  255
+#define LASER_RED_LS_MIN  178
+
+// Value Limits for Lower Range
+#define LASER_RED_LV_MAX  255
+#define LASER_RED_LV_MIN  178
+
+//------------ BRIGHT LASER HSV ----------
+// Hue Limits 
+#define LASER_BRIGHT_H_MAX  180
+#define LASER_BRIGHT_H_MIN  0
+
+// Saturation Limits 
+#define LASER_BRIGHT_S_MAX  255
+#define LASER_BRIGHT_S_MIN  0
+
+// Value Limits 
+#define LASER_BRIGHT_V_MAX  255
+#define LASER_BRIGHT_V_MIN  254
+
+
+
+/**************************************************************
+ *                        General Constants                   *
+ **************************************************************/
+
+//Region of interest - origin is upper left of image - keep as small as possible
+#define ROI_X      190 //Left Side of Conveyor, closest to camera
+#define ROI_Y      240 //Needs to be higher than (height of image)/2
+#define ROI_WIDTH  300 //(Right side of conveyor)-ROI_X
+#define ROI_HEIGHT 240 //(height of image)-ROI_Y
+
+#define BLACK 0   //based on inRange() output
+#define WHITE 255 //based on inRange() output
+
+
+
+/**************************************************************
+ *                    findLaser Constants                     *
+ **************************************************************/
+
+//These parameters are used to clean up the laser mask (should result in thicker line)
+#define FILTER_KERNAL_SIZE 9 // ODD(3 to 15), don't make too big (i.e. <= 15)
+#define FILTER_THRESHOLD   64 // 0-255, Less than this value is black, otherwise white
+
+
+/**************************************************************
+ *               laserProximityCheck Constants                *
+ **************************************************************/
+
+//Return Values
+#define MOVE_FORWARD_FAST   2
+#define MOVE_FORWARD_SLOW   1
+#define MOVE_BACKWARD_SLOW -1
+#define MOVE_BACKWARD_FAST -2
+#define STOP                0
+
+//Functionality
+#define PROXIMITY_ALLOWANCE 0.05 //Allowance for proximity check i.e. 0.0 - 1.0
+#define PROXIMITY_RANGE 5 //Will give us a little spread, in #pixels
+#define PROXIMITY_HEIGHT 50
+
+/**************************************************************
+ *           laserPerpendicularityCheck Constants             *
+ **************************************************************/
+
+#define PI 3.14159265
+
+
+
+/**************************************************************
+ *                   Function Prototypes                      *
+ **************************************************************/
+
+Mat findLaser(Mat & image); // Creates laserMask
+
+unsigned int findLaserHeight(Mat & laserMask, unsigned int searchColumn);
+
+unsigned int laserProximityCheck(unsigned int laserCenter, unsigned int targetHeight);
+
+double laserPerpendicularityCheck(unsigned int leftColumn, unsigned int rightColumn, unsigned int width);
+
+unsigned int laserDistanceMeasurement(const Mat & laserMask);
+
+#endif
