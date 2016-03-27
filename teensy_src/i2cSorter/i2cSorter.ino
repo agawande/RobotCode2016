@@ -10,21 +10,21 @@
 #define MID_LOAD_HEIGHT           -1750
 #define HIGH_LOAD_HEIGHT          -4050
 #define COUPLING_HEIGHT           0
-#define SORTER_GRAB_POSITION      -3150
+#define SORTER_GRAB_POSITION      -3100
 #define SORTER_CLEARANCE          -2400
 #define SMALL_BLOCK_CAGE_HEIGHT   -2650
-#define DEPOSIT_HEIGHT            -3800
+#define DEPOSIT_HEIGHT            -3690
 
 //Sorter positions
 #define XHOME              0
 #define YHOME              0
-#define LARGE_RED_X     -75
+#define LARGE_RED_X     -90
 #define LARGE_RED_Y     8000
-#define LARGE_YELLOW_X  -75
+#define LARGE_YELLOW_X  -90
 #define LARGE_YELLOW_Y  13500
-#define LARGE_GREEN_X   -75
+#define LARGE_GREEN_X   -90
 #define LARGE_GREEN_Y   18800
-#define LARGE_BLUE_X    -75
+#define LARGE_BLUE_X    -90
 #define LARGE_BLUE_Y    24000
 
 #define SMALL_RED_X     -1169
@@ -41,6 +41,9 @@
 #define YELLOW   1
 #define GREEN    2
 #define BLUE     3
+
+#define CAGE_RAISE_X -1000
+#define CAGE_RAISE_Y 900
 
 byte dataReceived[] = {0, 0, 0, 0};                             //This array of Bytes is where the incoming data from the Pi will be stored.
 byte dataToBeSent[] = {0, 0, 0, 0};
@@ -131,8 +134,8 @@ void motorSetup(void)
   //Sleep Pin for X
   digitalWriteFast(20, LOW);
  
-  stepperX.setMaxSpeed(5000);
-  stepperX.setAcceleration(5000);
+  stepperX.setMaxSpeed(3000);
+  stepperX.setAcceleration(3000);
   
   //Step settings for Y Motor
   pinMode(5, OUTPUT); //M0
@@ -347,9 +350,14 @@ void moveHere()
                    }
                    break;
              }
+             //Wire.onReceive(receiveEvent);
+            // Wire.onRequest(sendData);
              break;
       }
-
+      Wire.begin(SLAVE_ADDRESS);
+      Wire.onReceive(receiveEvent);
+      Wire.onRequest(sendData);
+       
       Serial.println(" ");
       Serial.println(" ????????????????????????????????????");
       Serial.println(" ? Waiting for completed command... ?");
@@ -381,23 +389,19 @@ void goToPosition(int x, int y)
 
 void waitForTeensy2(){
   Serial.println("Enter wait for teensy");
-  Wire.beginTransmission(0x05);
-  Wire.requestFrom(0x05, 1);    // request 1 byte from Teensy++2
   Serial.println("Requested");
-    byte x =1;
+  byte x =1;
   
-    while(x != 0) {
-       Wire.beginTransmission(0x05);
+  while(x != 0) {
        Wire.requestFrom(0x05, 1);
        x = Wire.read();
        Serial.println(x);
-       delay(2);
-    }
+       delay(5);
+   }
 
-  Serial.println("Done waiting");
-  Wire.begin(SLAVE_ADDRESS);
-  Wire.onReceive(receiveEvent);
-  Wire.onRequest(sendData);
+//   Wire.begin(SLAVE_ADDRESS);
+//   Wire.onReceive(receiveEvent);
+//   Wire.onRequest(sendData);
 }
 
 void sortLarge(int x, int y, int more)
@@ -417,11 +421,11 @@ void sortLarge(int x, int y, int more)
    zAxisTo(SORTER_GRAB_POSITION);
 
    delay(50);
-   
+
    sorterGrab();
    waitForTeensy2();
 
-   delay(50);
+   delay(1000);
 
    //Lower it a bit to sort
    zAxisTo(SORTER_CLEARANCE);
@@ -436,10 +440,15 @@ void sortLarge(int x, int y, int more)
    waitForTeensy2();
 
    delay(50);
+
+   sorterHome();
+   waitForTeensy2();
+
+   delay(50);
       
    //Go back to the pick up location
    goToPosition(XHOME, YHOME);
-
+   
    //if (more == 1) {
      //Move back to grab more blocks
    //  zAxisTo(SORTER_GRAB_POSITION);
@@ -503,6 +512,12 @@ void zAxisTo(int z) {
    }
 }
 
+void sorterHome()
+{
+  //device id is 7, function is 0
+  sendCmdMulti(0x07, 0x02);
+}
+
 void sorterGrab()
 {
 	//device id is 7, function is 0
@@ -530,29 +545,31 @@ void sendCmdMulti(byte cmdMask, byte functMask)
     for(int i=0; i<4; i++){
       Serial.println(dataToBeSent[i]);
     }
-	
+
+    Wire.begin();  //master
 	  Wire.beginTransmission(0x05);
   
 	  Wire.write(dataToBeSent, 4);
-			  
+
 	  Wire.endTransmission();
-	  //Serial.println("return code");
-	  //Serial.println(Wire.endTransmission());
-	  Wire.begin(SLAVE_ADDRESS);
-	  Wire.onReceive(receiveEvent);
-	  Wire.onRequest(sendData);
 }
 
 //Complex command to couple and move to deposit height
 void moveToDepositHeight()
 {
-   //Move stepperZ to coupling position
+   goToPosition(CAGE_RAISE_X, CAGE_RAISE_Y);
+  
+  //Move stepperZ to coupling position
    zAxisTo(COUPLING_HEIGHT);
    
    couple();
-   
+   waitForTeensy2();
+   stepperZ.setMaxSpeed(400);
+   stepperZ.setAcceleration(100); 
    //Move stepperZ to deposit height
    zAxisTo(DEPOSIT_HEIGHT);
+   stepperZ.setMaxSpeed(8000);
+   stepperZ.setAcceleration(10000); 
 }
 
 void couple()

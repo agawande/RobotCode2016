@@ -12,7 +12,7 @@
 byte dataReceived[] = {0, 0, 0, 0};                             //This array of Bytes is where the incoming data from the Pi will be stored.
 
 int numberOfByteReceived = 0;
-int state = 0;
+int state = 1;
 //SCL, pin 0
 //SDA, pin 1
 
@@ -73,8 +73,11 @@ int Coup2 = 15;
 int Coup2Dir = A2;
 int senseCoup2 = A1;
 
-boolean isCoupled = false;
+boolean isCoupleComplete = true;
 boolean isCompleted = false;
+unsigned long endT;
+unsigned long nowT;
+unsigned long startT;
 
 void setup()
 {
@@ -139,20 +142,17 @@ void setup()
   digitalWrite(MainConvD2, LOW);
   digitalWrite(GrabberDir1, HIGH);
   digitalWrite(GrabberDir2, LOW);
+
+
   
   //sorterGrabber.moveTo(100);
   //yield();
+  //sorterGrabber.moveTo(-110);
+  //deCouple();
 }
 
 void loop()
 {
-  //sorterGrabber.rotate(110);
-  //sorterGrabber.run();
-  //sleep for 1ms to relenquish the processor
-  //delay(1);
-  //  Serial.println(analogRead(senseCoup1));
-  //  Serial.println(analogRead(senseCoup2));
-  //  DeCouple();
   if (state == 0)// && isCompleted)
   {
     Serial.println("Completed command");
@@ -167,19 +167,38 @@ void loop()
      //Whenever the Pi attempts to read the i2c line from the slave, that sends a request via i2c to the Teensy, when the Teensy receives a request,
      //the Teensy calls the sendData() functions, as shown from the Wire.onRequest(sendData); function from above. This 1 milisecond delay gives plenty of time for the
      //Raspberry Pi 2 to pick up that the move operation has been completed.
-     delay(200);
+     delay(20);
+     state = 1;
   }
-  
 
-  //clamper.run();
-  //Serial.println("sorter distance to go");
-  //Serial.println(sorterGrabber.distanceToGo());
+  if(isCoupleComplete == false) 
+  {
+    startT = millis();
+
+    while(1)
+    {
+      nowT = millis();
+      endT = nowT - startT;
+      if (endT > 900) 
+      {
+          analogWrite(Coup1, 0);
+          analogWrite(Coup2, 0);
+          isCoupleComplete = true;
+          state = 0;
+          break;
+      }    
+    }
+  }
+
   if(sorterGrabber.distanceToGo() == 0 && clamper.distanceToGo() == 0 && isCompleted && state == 1) {
     state = 0;
     isCompleted = false;
+    
   }
+
   //sorterGrabber.runSpeed();
   sorterGrabber.run();
+  clamper.run();
 }
 
 ////Whenever the Teensy receieves a signal from the Master, this is ran.
@@ -322,10 +341,17 @@ void moveHere()
               switch(function) {
                 case 0: /*sorterGrabber.setSpeed(10000);*/ state  = 1; sorterGrabber.moveTo(-110); delay(10); isCompleted = true; break;  /*setSpeed() - try constant speed after this*/
                 case 1: /*sorterGrabber.setSpeed(10000);*/ state = 1; sorterGrabber.moveTo(110); delay(10); isCompleted = true; break;
+                case 2: /*sorterGrabber.setSpeed(10000);*/ state = 1; sorterGrabber.moveTo(0); delay(10); isCompleted = true; break;
               }
-              Wire.begin(SLAVE_ADDRESS);
-              Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
-              Wire.onRequest(sendData);
+              //Wire.begin(SLAVE_ADDRESS);
+              //Wire.onReceive(receiveEvent);                                  //Attach a function to trigger when something is received.
+              //Wire.onRequest(sendData);
+              break;
+         case 8:
+              switch(function) {
+                 case 0:  break; //open clamper
+                 case 1:  break; //close clamper
+              }
               break;
       }
       Serial.println(" ");
@@ -339,63 +365,63 @@ void moveHere()
 void couple()
 {  
   //Direction, might need to reverse it
-  digitalWrite(Coup1Dir, HIGH);
-  digitalWrite(Coup2Dir, LOW);
+  digitalWrite(Coup1Dir, LOW);
+  digitalWrite(Coup2Dir, HIGH);
 
   controlCouplingMotors(); 
   
-  isCoupled = true;
+  isCoupleComplete = false;
 }
 
 void deCouple()
 {
-  digitalWrite(Coup1Dir, LOW);
-  digitalWrite(Coup2Dir, HIGH);
+  digitalWrite(Coup1Dir, HIGH);
+  digitalWrite(Coup2Dir, LOW);
 
   controlCouplingMotors();
   
-  isCoupled = false;
+  isCoupleComplete = false;
 }
-unsigned long startT, endT, nowT;
+
 void controlCouplingMotors()
 {
-  analogWrite(Coup1, 200);
-  analogWrite(Coup2, 200);
+  analogWrite(Coup1, 255);
+  analogWrite(Coup2, 255);
   
-  //Prelimnary code for coupler
-  startT = micros();
-  Serial.print("start: ");
-  Serial.println(startT);
-  //unsigned long endT;
- // unsigned long nowT;
-
-  while(1){
-    int sensorValue1 = analogRead(senseCoup1);
-    int sensorValue2 = analogRead(senseCoup2);
-      Serial.print("Sense1: ");
-      Serial.println(analogRead(senseCoup1));
-      Serial.print("Sense2: ");
-      Serial.println(analogRead(senseCoup2));
-      nowT = micros();
-      endT = nowT - startT;
-      Serial.print("nowT: ");
-      Serial.println(nowT);
-      Serial.print("End: ");
-      Serial.println(endT);
-      
-      //Randomly just 1
-      if( (sensorValue1 > 260 && sensorValue2 > 250) ){
-        Serial.println("Motor Off");
-         analogWrite(Coup1, 0);
-         analogWrite(Coup2, 0);
-         break;
-      }
-
-      if (endT > 40000) {
-        break;
-      }
-  } //end of while
-  state = 0;
+//  //Prelimnary code for coupler
+//  startT = micros();
+//  Serial.print("start: ");
+//  Serial.println(startT);
+//  //unsigned long endT;
+// // unsigned long nowT;
+//
+//  while(1){
+//    int sensorValue1 = analogRead(senseCoup1);
+//    int sensorValue2 = analogRead(senseCoup2);
+//      Serial.print("Sense1: ");
+//      Serial.println(analogRead(senseCoup1));
+//      Serial.print("Sense2: ");
+//      Serial.println(analogRead(senseCoup2));
+//      nowT = micros();
+//      endT = nowT - startT;
+//      Serial.print("nowT: ");
+//      Serial.println(nowT);
+//      Serial.print("End: ");
+//      Serial.println(endT);
+//      
+//      //Randomly just 1
+//      if( (sensorValue1 > 260 && sensorValue2 > 250) ){
+//        Serial.println("Motor Off");
+//         analogWrite(Coup1, 0);
+//         analogWrite(Coup2, 0);
+//         break;
+//      }
+//
+//      if (endT > 40000) {
+//        break;
+//      }
+  //end of while
+  //state = 0;
 }
 
  void convProcess(int convDir1, int convDir2, int convPin, int function) {
@@ -457,11 +483,12 @@ void controlCouplingMotors()
 
 void sendData()
 {  
-  //writes a 0 to the i2c bus
+   //writes a 0 to the i2c bus
    Wire.write(state);
+   
    //Cosmetic printing, the state 0 should be active for around 1 milisecond, so print the beginning for a new command cosmeticly
    if (state == 0 && isCompleted)
-   {
+   {       
        Serial.println("Completed Command!");
        isCompleted = false;
    }
