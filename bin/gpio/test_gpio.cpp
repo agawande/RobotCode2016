@@ -12,14 +12,14 @@ using namespace std;
 int main()
 {
 
-   cout << "Initializing GPIO" << endl;
-   gpioInit();
 
+
+   cout << "Initializing GPIO" << endl;
    usleep(500000);
+   Gpio gpio;
+
    cout << "Main code entered" << endl;
    digitalWrite(LED_MAIN, ON);
-
-   Gpio gpio;
 
    gpio.laserOn();
 

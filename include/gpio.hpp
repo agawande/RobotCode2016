@@ -1,4 +1,6 @@
-#include <iostream>
+#ifndef GPIO_HPP
+#define GPIO_HPP
+
 #include <wiringPi.h>
 #include "gpio.h"
 
@@ -8,7 +10,8 @@ class Gpio
 {
    public:
 
-      // There are no custom constructors 
+      //Constructor
+      Gpio();
 
       // Methods
       int readStart()  { return digitalRead(SWITCH_START);  };
@@ -30,6 +33,9 @@ class Gpio
 
       } //turnOffLEDs
 
-   //There are no private data or methods
+   private:
+      void gpioInit();
 
 }; //class Gpio
+
+#endif

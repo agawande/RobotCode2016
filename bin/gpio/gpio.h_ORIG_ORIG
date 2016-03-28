@@ -2,7 +2,6 @@
 #define GPIO_H
 
 #include <wiringPi.h>
-
 /******************************************************************
 *       This block is used to setup the GPIO pins on the RPi      *
 *       There are 4 sections:                                     *

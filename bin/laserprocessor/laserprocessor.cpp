@@ -3,35 +3,40 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "laserProcessor.hpp"
+#include "laserprocessor.hpp"
+#include "laserprocessor.h"
 
 using namespace cv; 
 using namespace std;
 
-LaserProcessor::LaserProcessor() : LaserProcessor()
+LaserProcessor::LaserProcessor() : Camera() , Gpio()
 {
    scanColumnMiddle = (ROI_WIDTH / 2); //Roughly the middle column of the ROI
    scanColumnLeft   = 0; //Left most Column
    scanColumnRight  = ROI_WIDTH; //Right most column
 }
 
-unsigned int LaserProcessor::getBlockDistance( const Mat &originalImage )
+unsigned int LaserProcessor::getBlockDistance( const Mat &imageOriginal )
 {
-   Mat laserMask = findLaser( imageOriginal(Rect(290, 435, 50, 35 )).clone() );
+   Mat laserMask = findLaser( imageOriginal(Rect(ROI_X, ROI_Y, ROI_WIDTH, ROI_HEIGHT )).clone() );
 
-   return laserDistanceCheck( const Mat &lasermask, scanColumnMiddle );
+   return laserDistanceCheck( laserMask, scanColumnMiddle );
     
 } //getBlockDistance
 
 unsigned int LaserProcessor::getBlockDistance() // Takes picture if no argument specified
 {
-   Mat laserMask = findLaser( captureImage()(Rect(290, 435, 50, 35 )).clone() );
+   laserOn();
 
-   return laserDistanceCheck( const Mat &lasermask, scanColumnMiddle );
+   Mat laserMask = findLaser( captureImage()(Rect(ROI_X, ROI_Y, ROI_WIDTH, ROI_HEIGHT )).clone() );
+
+   laserOff();
+
+   return laserDistanceCheck( laserMask, scanColumnMiddle );
 
 } //getBlockDistance
 
-Mat findLaser(Mat &imageOriginal)
+Mat LaserProcessor::findLaser(const Mat &imageOriginal)
 {
    Mat imageROI;
    Mat imageHSV;
@@ -75,11 +80,8 @@ Mat findLaser(Mat &imageOriginal)
    // This is for the laser mask (red & bright or'd together)
    Mat maskLaser;
 
-   // Create region of interest  !!!! THIS NEEDS TO BE UPDATED WHEN ROBOT IS BUILT !!!!
-   imageROI = imageOriginal(Rect(ROI_X, ROI_Y, ROI_WIDTH, ROI_HEIGHT )).clone();
-
    // Convert image from BGR to HSV
-   cvtColor(imageROI, imageHSV, CV_BGR2HSV);
+   cvtColor(imageOriginal, imageHSV, CV_BGR2HSV);
 
    /************************************************************
     *  Create color masks                                      * 
@@ -103,7 +105,7 @@ Mat findLaser(Mat &imageOriginal)
    bitwise_or(maskLaserRed, maskLaserBright, maskLaser);
 
    // Apply Combined Mask
-   bitwise_and(imageROI, imageROI, imageLaser, maskLaser);
+   bitwise_and(imageOriginal, imageOriginal, imageLaser, maskLaser);
 
    // Filter mask to clean it up, should result in a thicker white line against black background
    blur(maskLaser, maskLaser, Size(FILTER_KERNAL_SIZE, FILTER_KERNAL_SIZE));
@@ -156,20 +158,18 @@ unsigned int LaserProcessor::laserDistanceCheck(const Mat &laserMask, unsigned i
 } // close laserDistanceCheck
 
 
-double laserPerpendicularityCheck(unsigned int leftColumnHeight, unsigned int rightColumnHeight, unsigned int width)
+double LaserProcessor::calculateAngle(const Mat &imageOriginal, unsigned int leftColumnHeight, unsigned int rightColumnHeight, unsigned int width)
 {
 
-   int leftHeight  = laserDistanceCheck( leftColumnHeight );
-   int rightHeight = laserDistanceCheck( rightColumnHeight );
+   int leftHeight  = laserDistanceCheck( imageOriginal, leftColumnHeight );
+   int rightHeight = laserDistanceCheck( imageOriginal, rightColumnHeight );
 
    int minDistance = min(leftHeight, rightHeight);
-   unsigned int minHeight   = min(leftColumnHeight, rightColumnHeight);
 
    cout << "Change in Height = " << rightHeight - leftHeight << endl;
 
    //cout << "Converted Width = " << convertedWidth << endl;
    cout << "Left Height = " << leftHeight << ", Right Hight = " << rightHeight << ", Width = " << width << endl;
-   cout << "Minimum Distance = " << minDistance << ", Minimum Hight = " << minHeight << endl;
 
    // Returning angle (have to multiply by -1 to fix the fact that height is measured from the top down
    //return atan( ((double)rightHeight - (double)leftHeight) / (double)convertedWidth ) * 180 / PI * -1;
