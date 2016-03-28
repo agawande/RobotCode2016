@@ -17,13 +17,13 @@ using namespace std;
 #define MID_LOAD_HEIGHT  2
 #define HIGH_LOAD_HEIGHT 3
 
-#define RED     0
-#define YELLOW  1
-#define GREEN   2
-#define BLUE    3
+#define SORTER_RED     0
+#define SORTER_YELLOW  1
+#define SORTER_GREEN   2
+#define SORTER_BLUE    3
 
-#define BIG   0
-#define SMALL 1
+#define SORTER_BIG   0
+#define SORTER_SMALL 1
 
 class Sorter
 {
@@ -36,6 +36,8 @@ class Sorter
       void zAxisTo( int );
       void moveToDepositHeight();
       void sort( int, int, int );
+      void deployGrabber();
+
       void sendCmd( int , int );
       void sendCmdRaw( int , unsigned int , unsigned int , unsigned int );
 

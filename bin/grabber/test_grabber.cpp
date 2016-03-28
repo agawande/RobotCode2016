@@ -6,7 +6,7 @@ int main()
 
   Grabber grabber(address);
 
-  grabber.grabberConveyer.moveForward();
+  grabber.conveyor.moveForward();
 
   grabber.clamper.close();
 }

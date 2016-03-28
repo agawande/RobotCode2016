@@ -29,8 +29,10 @@ $(TEST_PROGRAM).o: $(OBJS)
 	$(CC) $(CPPFLAGS) -c $(TEST_PROGRAM).cpp $(OBJS)
 
 install: 
+	cp *.h $(INCLUDE_DIR)
 	cp *.hpp $(INCLUDE_DIR)
 	cp $(PROGRAM).o $(LIB_DIR)
+	cp distancelookup.o $(LIB_DIR)
 
 clean:
 	rm *.o	

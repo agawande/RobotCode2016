@@ -1,3 +1,0 @@
-robot.cpp - main file
-insall binary (robot) in /usr/local/bin/robot
-check this rc.local and copy changes to /etc/rc.local for boot on start

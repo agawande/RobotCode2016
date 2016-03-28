@@ -12,11 +12,11 @@ class Grabber
    public:
 
       //Constructors
-      Grabber(const int myAddress) : grabberConveyer(myAddress, GRABBER_CONVEYER_DEVICE_ID),
+      Grabber(const int myAddress) : conveyor(myAddress, GRABBER_CONVEYER_DEVICE_ID),
                                      clamper(myAddress, GRABBER_CLAMPER_DEVICE_ID) {}
 
       //Grabber Conveyor
-      Conveyor grabberConveyer;
+      Conveyor conveyor;
       Clamper clamper;
 };
 

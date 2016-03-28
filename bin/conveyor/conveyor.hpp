@@ -11,22 +11,21 @@ const unsigned int REVERSE   = 2;
 const unsigned int SHUFFLE   = 3;
 const unsigned int UNDEFINED = -1;
 
-using namespace std; 
+using namespace std;
 
-//class Conveyor : public I2Cdispatcher {
 class Conveyor {
-   public: 
-      
+   public:
+
       //Constructors
-      Conveyor(const int myAddress, const unsigned int deviceId) : 
+      Conveyor(const int myAddress, const unsigned int deviceId) :
                                                                    address(myAddress),
                                                                    deviceId(deviceId),
-                                                                   i2cDispatcher(address) {} 
+                                                                   i2cDispatcher(address) {}
 
-      //Getters 
+      //Getters
       int  getState() { return state; }
       int  getAddress() { return address; }
-      unsigned int getDeviceId() { return deviceId; } 
+      unsigned int getDeviceId() { return deviceId; }
 
       //Setters
       void setState(unsigned int newState);
@@ -43,7 +42,7 @@ class Conveyor {
 
       //Private variables
       int state; 
-      int address;
+      const int address;
       int deviceId;
 
       //Private methods and objects

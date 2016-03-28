@@ -6,5 +6,7 @@ int main()
 {
   Sorter sorter(0x03);
 
-  sorter.sort(BIG, 1, GREEN);
+  //sorter.sort(BIG, 1, SORTER_GREEN);
+
+  sorter.moveToDepositHeight();
 }

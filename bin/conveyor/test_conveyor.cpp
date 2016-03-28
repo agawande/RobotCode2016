@@ -6,8 +6,8 @@ using namespace std;
 int main()
 {
 
-  unsigned int deviceId = 0;
-  int address = 0x05;
+  unsigned int deviceId = 4;
+  const int address = 0x05;
 
   Conveyor blue(address, deviceId);
 

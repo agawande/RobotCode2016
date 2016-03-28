@@ -1,162 +1,196 @@
 #include "robot.hpp"
-#include "messageformatter.hpp"
-#include "i2cdispatcher.hpp"
-#include "cage.hpp"
-#include "conveyor.hpp"
-#include "coupling.hpp"
+#include <unistd.h>
 
-#include "../motion/motion.hpp"
-#include "../sorter/sorter.hpp"
-
-#include "../vision/color/id_block_color.hpp"
-#include "../vision/color/gpio.h"
-
-#define BARGE_A_COLS 5
-#define BARGE_B_COLS 8
-#define BARGE_C_COLS 8
-
-using namespace std;
-
-int main()
+/*void initRobot()
 {
-  wiringPiSetupGpio();
 
-  Motion motion;
-  Sorter sorter;
-  //Laser laser;
-  //Coupler coupler;  //will start as decoupled in the setup
-  //Grabber grabber;
-  //Conveyer conveyer;
-  MultiUtil multi;
+} //initRobot*/
 
-  IDBlockColor idBlockColor;
+void Robot::selectCourseFromSwitch()
+{
+  //motion.setCourse(gpio.readSelect());
+} //end of selectCourseFromSwitch
 
-  if (digitalRead(COURSE_SWITCH) == ON) {
-    //Course 1
-    CourseFile courseFile("version_1");
-  } else {
-    //Course 2
-    CourseFile courseFile("version_2");
+void Robot::waitForStartSwitch()
+{
+  while (gpio.readStart() == OFF)
+  {
+    cout << "Waiting for start switch..." << endl;
+    if(gpio.readStart() == ON) {
+      cout << "The game is afoot!" << endl;
+      break;
+    }
+    sleep(1);
   }
+} //waitForGoSwitch()
 
-  waitForGoSwitch();
+//Grabs a block and exits when both limit switches are closed
+void Robot::grabBlock()
+{
+   //close clamper, need to modify to wait
+   grabber.clamper.close();
 
-  motion.crossTunnel();
+   //start grabber conveyor
+   grabber.conveyor.moveForward();
 
-  //will have to wait so that we are out of the tunnel
-  motion.checkForCompletion();
+   //start main conveyor
+   mainConv.moveForward();
 
-  //Drop the grabber once we are out of the tunnel
-  sorter.dropGrabber();
+   //might need a timer here
+   while(gpio.readLS1() == OFF && gpio.readLS2() == OFF) {
+      if(blocksInOneCol = 1 && gpio.readLS1() == OFF) {
+         //one small block remains, hence two limit switches would never close
+         break;
+      }
 
-  //Open the grabber, ready to grab
-  multi.deClampGrabber();
+      //flap till both limit switches are ON
+      if(grabber.clamper.getState() == CLAMPER_OPEN) {
+         grabber.clamper.close();
+      } else {
+         grabber.clamper.open();
+      }
+   } //end of while
 
-  //motion.moveNext(courseFile.next(), );
+   if(grabber.clamper.getState() == CLAMPER_CLOSE) {
+      grabber.clamper.open();
+   }
 
-  //moveInFrontOfBargeBBlock1();
+   //stop grabber conveyor
+   grabber.conveyor.stop();
 
-  //This should work for any barge, will change the name once I make sure
-  takeInBargeB();
-
-  return 0;
+   //stop main conveyor
+   mainConv.stop();
 }
 
-void storeBlock()
+void Robot::storeBlock(int barge)
 {
-  string color = idBlockColor.readColor();
-
-  //Go above the block
-  sorter.goToPickUp();
-  //actually grab the block
-  multi.sorterPickUp();
-  sorter.goTo(color, digitalRead(LSW_MIDDLE));
-  multi.sorterDrop();
-}
-
-void grabSet()
-{
-   //Clamp the grabber around block
-   multi.clampGrabber();
-
-   //Start the grabber's conveyer
-   multi.startGrabberConveyer();
-}
-
-void takeInBargeB()
-{
-  sorter.toHeightBargeB();
-  grabSet();  //grab one column
-
-  while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
-    multi.startMainConveyer();    //if it is already running?
+   //identify colors only on barge B and C
+   if (barge != NUM_BARGE_A)
+   {
+     int color;
+     switch( colorProcessor.idBlock() )
+     {
+        case COLOR_RED       :  color = SORTER_RED; break;
+        case COLOR_BLUE      :  color = SORTER_BLUE; break;
+        case COLOR_YELLOW    :  color = SORTER_YELLOW; break;
+        case COLOR_GREEN     :  color = SORTER_GREEN; break;
+        case COLOR_UNDEFINED :  cout << "Color unidentified" <<  endl; break;
+     }
+     //that is more blocks are there
+     if(blocksInOneCol == 4) {
+        sorter.sort(SORTER_BIG, 1, color);
+     } else if (blocksInOneCol == 2) {
+        sorter.sort(SORTER_BIG, 0, color);
+     }
+     largeCageStatus[color]++;
   }
-  multi.stopMainConveyer();
-  multi.stopGrabberConveyer();
-
-  storeBlock();
-
-  if (digitalRead(LSW_MIDDLE) == ON) {
-    //A small block was picked up, 3 blocks left or 1 small block and 1 large block left
-    while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_CORNER) == OFF) {
-      multi.startMainConveyer();
-    }
-    multi.stopMainConveyer();
-
-    storeBlock();
-
-    while(digitalRead(LSW_CORNER) == OFF) {
-      multi.startMainConveyer();
-    }
-    multi.stopMainConveyer();
-
-    storeBlock();
-
-    if (digitalRead(LSW_MIDDLE) == ON) {
-       //1 small block left, else nothing left
-       while(digitalRead(LSW_CORNER) == OFF) {
-         multi.startMainConveyer();
-       }
-       multi.stopMainConveyer();
-
-       storeBlock();
-    }
-
-  } else {
-    //A large block was picked up
-    // Now either two small blocks are left or 1 big block
-    while(digitalRead(LSW_CORNER) == OFF && digitalRead(LSW_MIDDLE) == OFF) {
-      multi.startMainConveyer();    //if it is already running?
-    }
-    multi.stopMainConveyer();
-
-    storeBlock();
-
-    if (digitalRead(LSW_MIDDLE) == ON) {
-       //1 small block left, else nothing left
-       while(digitalRead(LSW_CORNER) == OFF) {
-         multi.startMainConveyer();
-       }
-       multi.stopMainConveyer();
-
-       storeBlock();
-    }
+  else {
+     //all blocks are blue, assuming the blue column is full
+     int tryColor[3] = {SORTER_RED, SORTER_YELLOW, SORTER_GREEN};
+     for (int k = 0; k < 3; k++) {
+         if(largeCageStatus[tryColor[k]] < BIG_CAGE_SIZE) {
+            if(blocksInOneCol == 4) {
+               sorter.sort(SORTER_BIG, 1, tryColor[k]);
+            } else if (blocksInOneCol == 2) {
+               sorter.sort(SORTER_BIG, 0, tryColor[k]);
+            }
+            break;
+         }
+     }
   }
+   //decrement by 2 i.e. large block was picked up
+   //used in the loop in processBarge
+   //WHEN THIS FUNCTION IS MODIFIED FROM SMALL BLOCKS
+   //THEN FOR SMALL BLOCK DECREMENT BY 1
+   blocksInOneCol =- 2;
 }
 
+void Robot::processBarge(int numCols)
+{
+  for( int i = numCols; i > 0; i-- ) {
 
-/*
-    D1 D2 D3 D4: Small sized block
-     B  G  Y  R
-    D5 D6 D7 D8: Large sized block
+     //!!!!!!!!!!!LASER PROCESS HERE!!!!!!!!!!!!!!!
 
-    BACK
-    -----------------
-    | D5 D6 D7 D8 | |
-    | B  G  Y  R  | |
-    | B  G  Y  R  | |
-    | D1 D2 D3 D4 | |
-    | b  g  y  r  | |
-    ------------------
-    FRONT
-*/
+     for ( int j = blocksInOneCol; j>0; j-- ) {
+        grabBlock();
+        storeBlock(numCols);
+     }
+
+    //motion.nextBlock();
+  } //end of for for number of columns on the barge
+  blocksInOneCol = 4;
+} //end of processBarge
+
+void Robot::depositTruck()
+{
+  //Turn on all conveyors, except blue
+  cage.redConveyor.moveForward();
+  cage.yellowConveyor.moveForward();
+  cage.greenConveyor.moveForward();
+
+  //Sleep for 5 seconds
+  usleep(CONV_SLEEP);
+
+  //Turn off all conveyors except blue
+  cage.redConveyor.stop();
+  cage.yellowConveyor.stop();
+  cage.greenConveyor.stop();
+
+  largeCageStatus[SORTER_RED]    = 0;
+  largeCageStatus[SORTER_YELLOW] = 0;
+  largeCageStatus[SORTER_GREEN]  = 0;
+}
+
+void Robot::depositBoat()
+{
+  //Turn on all conveyors
+  cage.redConveyor.moveForward();
+  cage.yellowConveyor.moveForward();
+  cage.greenConveyor.moveForward();
+  cage.blueConveyor.moveForward();
+
+  //Sleep for 5 seconds
+  usleep(CONV_SLEEP);
+
+  //Turn off all conveyors
+  cage.redConveyor.stop();
+  cage.yellowConveyor.stop();
+  cage.greenConveyor.stop();
+  cage.blueConveyor.stop();
+
+  largeCageStatus[SORTER_RED]    = 0;
+  largeCageStatus[SORTER_YELLOW] = 0;
+  largeCageStatus[SORTER_GREEN]  = 0;
+  largeCageStatus[SORTER_BLUE]   = 0;
+}
+
+void Robot::depositHopper( int color )
+{
+  switch(color)
+  {
+    case SORTER_RED:
+                cage.redConveyor.moveForward();
+                usleep(CONV_SLEEP);
+                cage.redConveyor.stop();
+                largeCageStatus[SORTER_RED] = 0;
+                break;
+    case SORTER_YELLOW:
+                cage.yellowConveyor.moveForward();
+                usleep(CONV_SLEEP);
+                cage.yellowConveyor.stop();
+                largeCageStatus[SORTER_YELLOW] = 0;
+                break;
+    case SORTER_BLUE:
+                cage.blueConveyor.moveForward();
+                usleep(CONV_SLEEP);
+                cage.blueConveyor.stop();
+                largeCageStatus[SORTER_BLUE] = 0;
+                break;
+    case SORTER_GREEN:
+                cage.greenConveyor.moveForward();
+                usleep(CONV_SLEEP);
+                cage.greenConveyor.stop();
+                largeCageStatus[SORTER_GREEN] = 0;
+                break;
+  }
+}

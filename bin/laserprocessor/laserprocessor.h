@@ -88,12 +88,6 @@ const unsigned int FILTER_THRESHOLD   = 64; // 0-255, Less than this value is bl
 //Lookup Table
 extern const int distanceLookup[200];
 
-//Return Values
-const unsigned int MOVE_FORWARD_FAST  =  2;
-const unsigned int MOVE_FORWARD_SLOW  =  1;
-const unsigned int MOVE_BACKWARD_SLOW = -1;
-const unsigned int MOVE_BACKWARD_FAST = -2;
-const unsigned int STOP               =  0;
 
 //Functionality
 const unsigned int PROXIMITY_ALLOWANCE = 0.05; //Allowance for proximity check i.e. 0.0 - 1.0

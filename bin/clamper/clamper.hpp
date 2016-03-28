@@ -5,8 +5,8 @@
 #include "messageformatter.hpp"
 
 //state/commands
-const int OPEN  = 0;
-const int CLOSE = 1;
+const int CLAMPER_OPEN  = 0;
+const int CLAMPER_CLOSE = 1;
 
 class Clamper {
   public:

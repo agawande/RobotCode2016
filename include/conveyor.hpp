@@ -43,7 +43,7 @@ class Conveyor {
 
       //Private variables
       int state; 
-      int address;
+      const int address;
       int deviceId;
 
       //Private methods and objects

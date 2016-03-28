@@ -29,6 +29,7 @@ $(TEST_PROGRAM).o: $(DEPS) $(OBJS)
 	$(CC) $(CPPFLAGS) -c $(TEST_PROGRAM).cpp
 
 install: 
+	cp *.h $(INCLUDE_DIR)
 	cp *.hpp $(INCLUDE_DIR)
 	cp $(PROGRAM).o $(LIB_DIR)
 
