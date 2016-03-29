@@ -26,7 +26,7 @@ const float ANGLE_CONVER = 2.65988;
 int whichSync;
 
 //X1 (DirB, DirA, PWM, ENC B, ENC A), to get X Axis in same direction.
-DCMotorServo X1 = DCMotorServo(21, 22, 20, 14, 15);
+DCMotorServo X1 = DCMotorServo(21, 22, 20, 15, 14);
 //X2 (DirA, DirB, PWM, ENC A, ENC B), can stay default
 DCMotorServo X2 = DCMotorServo(6, 7, 9, 8, 10);
 //Y1 (DirB, DirA, PWM, ENC B, ENC A), to get Y Axis in same direction.
@@ -77,6 +77,8 @@ void setup()
   Y2.myPID->SetTunings(0.1,0.15,0.1);
   Y2.setPWMSkip(255);
   Y2.setAccuracy(3);
+  
+  //X.move(10000);
 }
 
 
@@ -86,10 +88,10 @@ void loop()
   state = 1;
 
 
-//  //Serial.println(X1.getActualPosition());
-//  //Serial.println(X2.getActualPosition());
-//  //Serial.println(Y1.getActualPosition());
-//  //Serial.println(Y2.getActualPosition());
+Serial.println(X1.getActualPosition());
+Serial.println(X2.getActualPosition());
+Serial.println(Y1.getActualPosition());
+Serial.println(Y2.getActualPosition());
 
   if ((X1.distanceToGo() < 500) && (X2.distanceToGo() < 500) && (Y1.distanceToGo() < 500) && (Y2.distanceToGo() < 500))
   {
@@ -343,126 +345,22 @@ void moveHere()
       
       Serial.println("Command Decoded:");
       
-      //Now use the direction extracted determine how the motors should move
-      //Forward: 0x00 -> xxxx0000 
-      if (directions == 0x00)
-      {
-        whichSync = 1;
-        Serial.print("  Move North: "); 
-        Serial.print(directions);
-        Serial.print(" Distance: ");
-        Serial.print(distance);
-        Serial.println("");
-        moveY(distance);                         //Uses one motor to keep track of coordinates, uses this same motor to set up a target position relative to current position                                           
-                                                 //The rest of the commands follow the same general form
-      } 
-      // Reverse: 0x01 -> xxxx0001 
-        else if (directions == 0x01)
-        {
-          whichSync = 1;
-          Serial.print("  Move South: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");
-          moveY(-distance);
-        }
-       // Move Left: 0x02 -> xxxx0010
-        else if (directions == 0x02)
-        {
-          whichSync = 0;
-          Serial.print("  Move West: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");
-          moveX(-distance);     
-        }
-       // Move Right: 0x03 -> xxxx0011
-        else if (directions == 0x03)
-        {
-          whichSync = 0;
-          Serial.print("  Move East: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");
-          moveX(distance);
-        }
-        // Clockwise spin: 0x04 -> xxxx0100 
-        else if (directions == 0x04)
-        {
-          whichSync = 2;
-          Serial.print("  Clockwise Spin: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          distance = getMM(ANGLE_CONVER*dist);
-          Serial.print(distance);
-          Serial.println("");
-          spin(distance);
-        }
-        // Anti Clockwise spin: 0x05 -> xxxx0101 
-        else if (directions == 0x05)
-        {
-          whichSync = 2;
-          Serial.print("  Anti-Clockwise Spin: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          distance = getMM(ANGLE_CONVER*dist);
-          Serial.print(distance);
-          Serial.println("");
-          spin(-distance);
-        }
-        // Move Quadrant 1: 0x06 -> xxxx0110
-        else if (directions == 0x06)
-        {
-          whichSync = 2;
-          Serial.print("  Quadrant I Movement: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");
-          moveQuadrantI(distance);
-        }
-        // Move Quadrant II: 0x07 -> xxxx0111
-        else if (directions == 0x07)
-        {
-          whichSync = 2;
-          Serial.print("  Quadrant II Movement: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");
-          moveQuadrantII(distance);
-        }
-        // Move Quadrant III: 0x08 -> xxxx1000
-        else if (directions == 0x08)
-        {
-          whichSync = 2;
-          Serial.print("  Quadrant III Movement: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");
-          moveQuadrantIII(distance);
-        }
-        // Move Quadrant IV: 0x09 -> xxxx1001
-        else if (directions == 0x09)
-        {
-          whichSync = 2;
-          Serial.print("  Quadrant IV Movement: "); 
-          Serial.print(directions);
-          Serial.print(" Distance: ");
-          Serial.print(distance);
-          Serial.println("");        
-          moveQuadrantIV(distance);
-        }
-        
-        Serial.println(" ");
-        Serial.println(" ????????????????????????????????????");
-        Serial.println(" ? Waiting for completed command... ?");
-        Serial.println(" ????????????????????????????????????");
-        Serial.println(" ");
+      
+         switch(directions) 
+         {
+           case 0: whichSync = 1; moveNorth(distance); break;
+           case 1: whichSync = 1; moveSouth(distance); break;
+           case 2: whichSync = 0; moveWest(distance); break;
+           case 3: whichSync = 0; moveEast(distance); break;
+           case 4: whichSync = 2; distance = getMM(ANGLE_CONVER*dist); spin(distance); break;
+           case 5: whichSync = 2; distance = getMM(ANGLE_CONVER*dist); spin(-distance); break;
+           case 6: whichSync = 2; moveQuadrantI(distance); break;
+           case 7: whichSync = 2; moveQuadrantII(distance); break;
+           case 8: whichSync = 2; moveQuadrantIII(distance); break;
+           case 9: whichSync = 2; moveQuadrantIV(distance); break;
+           case 10: goThroughTunnel0();break;
+           case 11: goThroughTunnel1();break;
+         }
 }
 
 //sendData is called when the Raspberry Pi requests some data from the Teensy. This is performed mainly when the Raspberry Pi has sent a command to the Teensy 3.1
@@ -561,16 +459,28 @@ void spin(int distance)                                                         
   Y2.move(distance);
 }
 
-void moveX(int distance)
+void moveWest(int distance)
+{ 
+  X1.move(-distance);
+  X2.move(-distance);
+}
+
+void moveEast(int distance)
 { 
   X1.move(distance);
   X2.move(distance);
 }
 
-void moveY(int distance)
+void moveNorth(int distance)
 { 
   Y1.move(distance);
   Y2.move(distance);
+}
+
+void moveSouth(int distance)
+{ 
+  Y1.move(-distance);
+  Y2.move(-distance);
 }
 
 void moveQuadrantI(int distance)
@@ -605,6 +515,40 @@ void moveQuadrantIV(int distance)
   Y2.move(-distance);
 }
 
+void goThroughTunnel0()
+{
+  whichSync = 0;
+  moveWest(150);
+  delay(100);
+  whichSync = 1;
+  moveNorth(450);
+  delay(100);
+  whichSync = 2;
+  spin(ANGLE_CONVER*45);
+  delay(100);
+  moveQuadrantII(500);
+  delay(100);
+  whichSync = 1;
+  moveNorth(1000);
+  
+}
+void goThroughTunnel1()
+{
+  whichSync = 0;
+  moveEast(150);
+  delay(100);
+  whichSync = 1;
+  moveNorth(450);
+  delay(100);
+  whichSync = 2;
+  spin(-ANGLE_CONVER*45);
+  delay(100);
+  moveQuadrantI(500);
+  delay(100);
+  whichSync = 1;
+  moveNorth(1000);
+  
+}
 double getMM(int distance){
   //22400 because it takes 4480 counts per revolution and *10 because Derek said so
   //d = 70.29 mm
