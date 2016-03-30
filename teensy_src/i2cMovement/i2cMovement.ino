@@ -519,36 +519,35 @@ void moveQuadrantIV(int distance)
 void goThroughTunnel0()
 {
   whichSync = 0;
-  moveWest(150);
+  moveWest(getMM(150));
   delay(100);
   whichSync = 1;
-  moveNorth(450);
+  moveNorth(getMM(450));
   delay(100);
   whichSync = 2;
-  spin(ANGLE_CONVER*45);
+  spin(getMM(ANGLE_CONVER*45));
   delay(100);
-  moveQuadrantII(500);
+  moveQuadrantII(getMM(500));
   delay(100);
   whichSync = 1;
-  moveNorth(1000);
+  moveNorth(getMM(1000));
   
 }
 void goThroughTunnel1()
 {
   whichSync = 0;
-  moveEast(150);
+  moveEast(getMM(150));
   delay(100);
   whichSync = 1;
-  moveNorth(450);
+  moveNorth(getMM(400));
   delay(100);
   whichSync = 2;
-  spin(-ANGLE_CONVER*45);
+  spin(getMM(-ANGLE_CONVER*45));
   delay(100);
-  moveQuadrantI(500);
+  moveQuadrantI(getMM(500));
   delay(100);
   whichSync = 1;
-  moveNorth(1000);
-  
+  moveNorth(getMM(1000)); 
 }
 double getMM(int distance){
   //22400 because it takes 4480 counts per revolution and *10 because Derek said so
