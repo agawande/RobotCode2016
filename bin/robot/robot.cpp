@@ -109,14 +109,17 @@ void Robot::processBarge(int numCols)
 {
   for( int i = numCols; i > 0; i-- ) {
 
-     //!!!!!!!!!!!LASER PROCESS HERE!!!!!!!!!!!!!!!
-
      for ( int j = blocksInOneCol; j>0; j-- ) {
         grabBlock();
         storeBlock(numCols);
      }
 
-    //motion.nextBlock();
+     if ( i == 0) {
+         //if first block align
+         motion.nextBlock(1);
+     } else {
+         motion.nextBlock(0);
+     }
   } //end of for for number of columns on the barge
   blocksInOneCol = 4;
 } //end of processBarge

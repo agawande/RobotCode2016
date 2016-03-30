@@ -7,6 +7,16 @@
 #include "coursereader.hpp"
 #include "complex.hpp"
 
+#define MOTION_NORTH      0
+#define MOTION_SOUTH      1
+#define MOTION_WEST       2
+#define MOTION_EAST       3
+#define MOTION_SPIN_CW    4
+#define MOTION_SPIN_ACW   5
+
+#define MOTION_TUNNEL_0  10
+#define MOTION_TUNNEL_1  11
+
 using namespace std;
 
 //file names
@@ -35,7 +45,6 @@ class Motion
       void sendCmd( int , int );
 
       void moveToCoordinate();
-
 
       //public objects
       CourseReader courseCoor;

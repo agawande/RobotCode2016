@@ -5,7 +5,24 @@
 #include "i2cdispatcher.hpp"
 #include "messageformatter.hpp"
 #include "coursereader.hpp"
-#include "complex.hpp"
+#include "coordinate.hpp"
+#include "laserprocessor.hpp"
+
+//Commands
+#define MOTION_NORTH      0
+#define MOTION_SOUTH      1
+#define MOTION_WEST       2
+#define MOTION_EAST       3
+#define MOTION_SPIN_CW    4
+#define MOTION_SPIN_ACW   5
+#define MOTION_TUNNEL_0  10
+#define MOTION_TUNNEL_1  11
+
+//distances
+#define COURSE_LENGTH   2438   //8 feet
+#define BARGE_WIDTH     254    //10 inches
+#define ALIGN_DIST      318    //12.5 inch
+#define INCH            25     //1 inch
 
 using namespace std;
 
@@ -27,31 +44,31 @@ class Motion
       void setCourse( int );
 
       void moveThroughTunnel();
-      //used by main program
-      void next();
+      void next(  );
       //go to the next block on the barge
-      void nextBlock();
+      void nextBlock( int shouldAlignToBlock );
 
       void sendCmd( int , int );
-
-      void moveToCoordinate();
-
 
       //public objects
       CourseReader courseCoor;
       CourseReader tunnelCoor;
 
+      LaserProcessor laserProcessor;
+
   private:
 
      //Private methods
      void processCourse();
+     void moveToCoordinate();
+     void inFrontOfNextBlock(int direction);
 
      //Private variables
      const int address;
      unsigned int course;
 
      unsigned int orientation;
-     Complex currentPosition;
+     Coordinate currentPosition;
 
      //Private objects
      I2cDispatcher i2cDispatcher;;

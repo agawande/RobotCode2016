@@ -9,7 +9,6 @@
 
 using namespace cv;
 
-
 class LaserProcessor : public Camera, public Gpio
 {
    public:

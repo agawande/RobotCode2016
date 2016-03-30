@@ -9,8 +9,11 @@ class Complex {
      int index, x, y, orient;
 
   public:
-     Complex( int , int , int, int );
 
+     //Constructors
+     Complex( int, int ,int , int );
+
+     //Public methods
      void setX( int );
      void setY( int );
      void setIndex( int );

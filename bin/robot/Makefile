@@ -17,7 +17,7 @@ CPPFLAGS    = -I. -I$(INCLUDE_DIR)
 LDFLAGS     = -L$(LIB_DIR) -lwiringPi -L/opt/vc/lib -lpthread -lmmal -lmmal_core -lmmal_util
 
 OBJS = $(PROGRAM).o i2cdispatcher.o messageformatter.o grabber.o sorter.o conveyor.o gpio.o colorprocessor.o\
-                    laserprocessor.o camera.o distancelookup.o clamper.o #motion.o
+                    camera.o distancelookup.o clamper.o #motion.o
 
 TEST_OBJS = $(OBJS) $(TEST_PROGRAM).o 
 

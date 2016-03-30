@@ -1,5 +1,5 @@
 #include "coursereader.hpp"
-#include "complex.hpp"
+#include "coordinate.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
 #include <iostream>
@@ -14,7 +14,7 @@ using namespace std;
 
 CourseReader::~CourseReader()
 {
-  delete complexArray;
+  delete coordinateArray;
 }
 
 void
@@ -27,40 +27,40 @@ CourseReader::readFileIntoArray()
   fileStream.clear();
   fileStream.seekg(0);
 
-  complexArray = new Complex*[numLines];
+  coordinateArray = new Coordinate*[numLines];
 
   numLines = 0;
 
   while (getline(fileStream, nextLine)) {
-     complexArray[numLines] = processLine(nextLine);
+     coordinateArray[numLines] = processLine(nextLine);
      numLines++;
   }
   fileStream.close();
 }
 
-Complex*
+Coordinate*
 CourseReader::atIndex(int index) {
    if(index < numLines && index >= 0) {
-     return complexArray[index];
+     return coordinateArray[index];
    }
    cout << "Index does not exists" << endl;
    return 0;
 }
 
-Complex*
+Coordinate*
 CourseReader::next() {
    if( currentLine < numLines && currentLine >= 0) {
      if(currentLine == numLines) {
-       return complexArray[currentLine];
+       return coordinateArray[currentLine];
      } else {
-       return complexArray[currentLine++];
+       return coordinateArray[currentLine++];
      }
    }
    cout << "No more next, End of file" << endl;
    return 0;
 }
 
-Complex*
+Coordinate*
 CourseReader::processLine(string line) {
   string myArray[4];
 
@@ -78,7 +78,7 @@ CourseReader::processLine(string line) {
     }
   }
 
-  return new Complex(vect.at(0), vect.at(1), vect.at(2), vect.at(3));
+  return new Coordinate(vect.at(0), vect.at(1), vect.at(2), vect.at(3));
 }
 
 void

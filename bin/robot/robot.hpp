@@ -13,7 +13,6 @@
 #include "grabber.hpp"
 #include "colorprocessor.h"
 #include "colorprocessor.hpp"
-#include "laserprocessor.hpp"
 //#include "motion.hpp"
 
 #define ON  1
@@ -52,7 +51,6 @@ class Robot
         Sorter sorter;
         Grabber grabber;
         ColorProcessor colorProcessor;
-        LaserProcessor laserProcessor;
         Gpio gpio;
         //Motion motion;
 

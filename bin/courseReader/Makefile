@@ -14,7 +14,7 @@ VPATH       = $(BIN_DIR)/i2cdispatcher:$(BIN_DIR)/messageformatter:$(LIB_DIR)
 CPPFLAGS    = -I. -I$(INCLUDE_DIR)
 LDFLAGS     = -L$(LIB_DIR)
 
-OBJS = $(PROGRAM).o i2cdispatcher.o messageformatter.o complex.o
+OBJS = $(PROGRAM).o i2cdispatcher.o messageformatter.o coordinate.o
 
 TEST_OBJS = $(OBJS) $(TEST_PROGRAM).o 
 

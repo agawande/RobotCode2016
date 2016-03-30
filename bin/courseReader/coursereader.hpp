@@ -2,7 +2,7 @@
 #define COURSE_READER_HPP
 
 #include <iostream>
-#include "complex.hpp"
+#include "coordinate.hpp"
 #include <fstream>
 
 using namespace std;
@@ -17,18 +17,18 @@ class CourseReader {
     ~CourseReader();
 
     //public functions
-    Complex* next();
-    Complex* atIndex( int );
+    Coordinate* next();
+    Coordinate* atIndex( int );
 
     void readFileIntoArray();
     void setFileName( const string & );
 
   private:
     //private objecys
-    Complex* processLine( string );
+    Coordinate* processLine( string );
     ifstream fileStream;
     string nextLine, fileName;
-    Complex **complexArray;
+    Coordinate **coordinateArray;
     int numLines, currentLine;
 };
 
