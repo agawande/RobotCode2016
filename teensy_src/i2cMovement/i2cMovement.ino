@@ -32,7 +32,7 @@ DCMotorServo X2 = DCMotorServo(6, 7, 9, 8, 10);
 //Y1 (DirB, DirA, PWM, ENC B, ENC A), to get Y Axis in same direction.
 DCMotorServo Y1 = DCMotorServo(2, 4, 5, 12, 11);
 //Y2 (DirA, DirB, PWM, ENC A, ENC B), can stay default
-DCMotorServo Y2 = DCMotorServo(1, 0, 3, 17, 16);
+DCMotorServo Y2 = DCMotorServo(0, 1, 3, 17, 16);
 int counter = 0;
 
 long normalizeX1, normalizeX2, normalizeY1, normalizeY2;       
@@ -78,7 +78,8 @@ void setup()
   Y2.setPWMSkip(255);
   Y2.setAccuracy(3);
   
-  //X.move(10000);
+  spin(10000);
+  whichSync = 2;
 }
 
 
@@ -95,17 +96,17 @@ Serial.println(Y2.getActualPosition());
 
   if ((X1.distanceToGo() < 500) && (X2.distanceToGo() < 500) && (Y1.distanceToGo() < 500) && (Y2.distanceToGo() < 500))
   {
-      X1.myPID->SetTunings(0.15,0.2,0.24);
-      X2.myPID->SetTunings(0.15,0.2,0.24);
-      Y1.myPID->SetTunings(0.15,0.2,0.24);
-      Y2.myPID->SetTunings(0.15,0.2,0.24);
+      X1.myPID->SetTunings(0.15,0.2,0.30);
+      X2.myPID->SetTunings(0.15,0.2,0.30);
+      Y1.myPID->SetTunings(0.15,0.2,0.30);
+      Y2.myPID->SetTunings(0.15,0.2,0.30);
   }
   else
   {
-      X1.myPID->SetTunings(0.1,0.15,0.05);
-      X2.myPID->SetTunings(0.1,0.15,0.05);
-      Y1.myPID->SetTunings(0.1,0.15,0.05);
-      Y2.myPID->SetTunings(0.1,0.15,0.05);
+      X1.myPID->SetTunings(0.1,0.04,0.30);
+      X2.myPID->SetTunings(0.1,0.04,0.30);
+      Y1.myPID->SetTunings(0.1,0.04,0.30);
+      Y2.myPID->SetTunings(0.1,0.04,0.30);
   }
 
   if (whichSync == 0)
@@ -454,33 +455,33 @@ void synchronizeTwo(DCMotorServo a, DCMotorServo b)
 void spin(int distance)                                                                                          //Spins the robot clockwise or counter clockwise depending on the distance used 
 {
   X1.move(-distance);
-  X2.move(distance);
-  Y1.move(-distance);
-  Y2.move(distance);
+  X2.move(-distance);
+  Y1.move(distance);
+  Y2.move(-distance);
 }
 
 void moveWest(int distance)
 { 
-  X1.move(-distance);
+  X1.move(distance);
   X2.move(-distance);
 }
 
 void moveEast(int distance)
 { 
-  X1.move(distance);
+  X1.move(-distance);
   X2.move(distance);
 }
 
 void moveNorth(int distance)
 { 
-  Y1.move(distance);
-  Y2.move(distance);
+  Y1.move(-distance);
+  Y2.move(-distance);
 }
 
 void moveSouth(int distance)
 { 
-  Y1.move(-distance);
-  Y2.move(-distance);
+  Y1.move(distance);
+  Y2.move(distance);
 }
 
 void moveQuadrantI(int distance)
@@ -488,31 +489,31 @@ void moveQuadrantI(int distance)
   X1.move(distance);
   X2.move(distance);
   Y1.move(distance);
-  Y2.move(distance);                                             
+  Y2.move(-distance);                                             
 }
 
 void moveQuadrantII(int distance)                                 //The rest of the movement commands are self explanatory
 {
   X1.move(-distance);
-  X2.move(-distance);
-  Y1.move(distance);
-  Y2.move(distance);                                            
+  X2.move(distance);
+  Y1.move(-distance);
+  Y2.move(-distance);                                            
 }
 
 void moveQuadrantIII(int distance)
 {
   X1.move(-distance);
-  X2.move(-distance);
-  Y1.move(-distance);
-  Y2.move(-distance);
+  X2.move(distance);
+  Y1.move(distance);
+  Y2.move(distance);
 }
 
 void moveQuadrantIV(int distance)
 {
   X1.move(distance);
-  X2.move(distance);
-  Y1.move(-distance);
-  Y2.move(-distance);
+  X2.move(-distance);
+  Y1.move(distance);
+  Y2.move(distance);
 }
 
 void goThroughTunnel0()
