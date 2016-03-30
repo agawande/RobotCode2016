@@ -33,8 +33,6 @@ class Sorter
       Sorter(const int myAddress) : address(myAddress), i2cDispatcher(address) {}
 
       //public methods
-      void zAxisTo( int );
-      void moveToDepositHeight();
       void sort( int, int, int );
       void deployGrabber();
 

@@ -13,6 +13,7 @@
 #include "grabber.hpp"
 #include "colorprocessor.h"
 #include "colorprocessor.hpp"
+#include "zaix.hpp"
 //#include "motion.hpp"
 
 #define ON  1
@@ -32,8 +33,8 @@ class Robot
     public:
         //Constructors
         Robot(): cage(MULTI_ADDRESS), mainConv(MULTI_ADDRESS, MAIN_CONV_DEVICE_ID),
-                 sorter(SORTER_ADDRESS), grabber(MULTI_ADDRESS) /*, motion(MOVEMENT_ADDRESS)*/
-                 , blocksInOneCol(4) {}
+                 sorter(SORTER_ADDRESS), grabber(MULTI_ADDRESS) , zaxis(MULTI_ADDRESS)
+                  /*, motion(MOVEMENT_ADDRESS, &zaxis)*/, blocksInOneCol(4) {}
 
         //Public methods
         void waitForStartSwitch();
@@ -53,6 +54,7 @@ class Robot
         ColorProcessor colorProcessor;
         Gpio gpio;
         //Motion motion;
+        Zaxis zaxis;
 
    private:
 

@@ -17,7 +17,7 @@ CPPFLAGS    = -I. -I$(INCLUDE_DIR)
 LDFLAGS     = -L$(LIB_DIR) -lwiringPi -L/opt/vc/lib -lpthread -lmmal -lmmal_core -lmmal_util
 
 OBJS = $(PROGRAM).o i2cdispatcher.o messageformatter.o grabber.o sorter.o conveyor.o gpio.o colorprocessor.o\
-                    camera.o distancelookup.o clamper.o #motion.o
+                    camera.o distancelookup.o clamper.o zaxis.o #motion.o
 
 TEST_OBJS = $(OBJS) $(TEST_PROGRAM).o 
 
@@ -35,7 +35,6 @@ $(TEST_PROGRAM).o: $(DEPS) $(OBJS)
 install: 
 	cp *.hpp $(INCLUDE_DIR)
 	cp $(PROGRAM).o $(LIB_DIR)
-        
 
 clean:
 	rm *.o	

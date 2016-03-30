@@ -126,6 +126,8 @@ void Robot::processBarge(int numCols)
 
 void Robot::depositTruck()
 {
+  zaxis.moveToDepositHeight();
+
   //Turn on all conveyors, except blue
   cage.redConveyor.moveForward();
   cage.yellowConveyor.moveForward();
@@ -146,6 +148,8 @@ void Robot::depositTruck()
 
 void Robot::depositBoat()
 {
+  zaxis.moveToDepositHeight();
+
   //Turn on all conveyors
   cage.redConveyor.moveForward();
   cage.yellowConveyor.moveForward();
@@ -169,6 +173,7 @@ void Robot::depositBoat()
 
 void Robot::depositHopper( int color )
 {
+  zaxis.moveToDepositHeight();
   switch(color)
   {
     case SORTER_RED:

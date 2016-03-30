@@ -7,6 +7,7 @@
 #include "coursereader.hpp"
 #include "coordinate.hpp"
 #include "laserprocessor.hpp"
+#include "zaxis.hpp"
 
 //Commands
 #define MOTION_NORTH      0
@@ -37,14 +38,14 @@ class Motion
   public:
 
       //Constructors
-      Motion(const int myAddress) : address(myAddress), i2cDispatcher(myAddress),
-                                    currentPosition(0,0,0,0) {}
+      Motion(const int myAddress, Zaxis &zaxis) : address(myAddress), i2cDispatcher(myAddress),
+                                                  zaxis(zaxis), currentPosition(0,0,0,0) {}
 
       //public methods
       void setCourse( int );
 
       void moveThroughTunnel();
-      void next(  );
+      void next();
       //go to the next block on the barge
       void nextBlock( int shouldAlignToBlock );
 
@@ -55,6 +56,7 @@ class Motion
       CourseReader tunnelCoor;
 
       LaserProcessor laserProcessor;
+      Zaxis &zaxis;
 
   private:
 
