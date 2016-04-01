@@ -1,5 +1,5 @@
 /* Encoder Library, for measuring quadrature encoded signals
- * http://www.pjrc.com/teensy/td_libs_Encoder.html*/
+ * http://www.pjrc.com/teensy/td_libs_Encoder.html */
 #include <Encoder.h>
 #include "PID_v1.h"
 

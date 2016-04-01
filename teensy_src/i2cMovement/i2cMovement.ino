@@ -1,9 +1,11 @@
+#include <i2c_t3.h>
+
 //Include Encoder and PID_v1 to enable DCMotorServo's usage of them.
 //(see: http://stackoverflow.com/questions/6504211/is-it-possible-to-include-a-library-from-another-library-using-the-arduino-ide)
 #include <Encoder.h>
 #include "PID_v1.h"
 #include "DCMotorServo.h"
-#include <Wire.h>
+//#include <Wire.h>
 
 //Set the Address for the Slave (Teensy 3.1)
 #define SLAVE_ADDRESS 0x04
@@ -41,7 +43,24 @@ long normalizedX1, normalizedX2, normalizedY1, normalizedY2;
 boolean beenReached = false;
 boolean commandFinished = false;
 
+#define CPU_RESTART_ADDR (uint32_t *)0xE000ED0C
+#define CPU_RESTART_VAL 0x5FA0004
+#define CPU_RESTART (*CPU_RESTART_ADDR = CPU_RESTART_VAL);
+
 void setup() 
+{
+  setEverything();
+
+  //----1------/
+  //X2.move(getMM(80));
+  //X1.move(getMM(80));
+  //Y1.move(-getMM(55));
+  //moveNorth(getMM(500));
+  //----1------/
+  //moveQuadrantII(getMM(500));
+}
+
+void setEverything()
 {
   Wire.begin(SLAVE_ADDRESS);                                     //Start the I2C Bus as Slave on address
   //Serial.println("Hello");
@@ -63,47 +82,26 @@ void setup()
   //Determined by trial and error
   //servo.myPID->SetTunings(0.1,0.15,0.05);
   X1.myPID->SetTunings(0.1,0.15,0.1);
-  X1.setPWMSkip(40);
+  X1.setPWMSkip(255);
   X1.setAccuracy(3);
   
   X2.myPID->SetTunings(0.1,0.15,0.1);
-  X2.setPWMSkip(40);
+  X2.setPWMSkip(255);
   X2.setAccuracy(3);
   
   Y1.myPID->SetTunings(0.1,0.15,0.1);
-  Y1.setPWMSkip(40);
+  Y1.setPWMSkip(255);
   Y1.setAccuracy(3);
 //  
   Y2.myPID->SetTunings(0.1,0.15,0.1);
-  Y2.setPWMSkip(40);
+  Y2.setPWMSkip(255);
   Y2.setAccuracy(3);
   
-  X1.myPID->SetResolution(1);
-  X2.myPID->SetResolution(1);
-  Y1.myPID->SetResolution(1);
-  Y2.myPID->SetResolution(1);
+  //spin(10000);
+  //delay(5000);
+  whichSync = 2;  
   
-  X1.myPID->SetSampleTime(250);
-  X2.myPID->SetSampleTime(250);
-  Y1.myPID->SetSampleTime(250);
-  Y2.myPID->SetSampleTime(250);
-  
-  X1.myPID->SetTunings(0.15,0.2,0.30);
-  X2.myPID->SetTunings(0.15,0.2,0.30);
-  Y1.myPID->SetTunings(0.15,0.2,0.30);
-  Y2.myPID->SetTunings(0.15,0.2,0.30);
-  analogWriteFrequency(20, 46875);
-  analogWriteFrequency(9, 46875);
-  analogWriteFrequency(5, 46875);
-  analogWriteFrequency(3, 46875);
-  analogWriteResolution(8);
-  
-  
-  whichSync = 2;
-  
-  moveNorth(10000);
 }
-
 
 void loop() 
 {
@@ -116,73 +114,36 @@ Serial.println(X2.getActualPosition());
 Serial.println(Y1.getActualPosition());
 Serial.println(Y2.getActualPosition());
 
-  if ((X1.distanceToGo() < 200) && (X2.distanceToGo() < 200) && (Y1.distanceToGo() < 200) && (Y2.distanceToGo() < 200))
+  if ((X1.distanceToGo() < 500) && (X2.distanceToGo() < 500) && (Y1.distanceToGo() < 500) && (Y2.distanceToGo() < 500))
   {
-      X1.myPID->SetTunings(0.01,5,4);
-      X2.myPID->SetTunings(0.01,5,4);
-      Y1.myPID->SetTunings(0.01,5,4);
-      Y2.myPID->SetTunings(0.01,5,4);
-  }
-  else if ((X1.distanceToGo() < 400) && (X2.distanceToGo() < 400) && (Y1.distanceToGo() < 400) && (Y2.distanceToGo() < 400))
-  {
-      X1.myPID->SetTunings(0.3,3,4);
-      X2.myPID->SetTunings(0.3,3,4);
-      Y1.myPID->SetTunings(0.3,3,4);
-      Y2.myPID->SetTunings(0.3,3,4);
+      X1.myPID->SetTunings(1,0.2,0.30);
+      X2.myPID->SetTunings(1,0.2,0.30);
+      Y1.myPID->SetTunings(1,0.2,0.30);
+      Y2.myPID->SetTunings(1,0.2,0.30);
   }
   else
   {
-      
-      X1.myPID->SetTunings(1,0.2,0.15);
-      X2.myPID->SetTunings(1,0.2,0.15);
-      Y1.myPID->SetTunings(1,0.2,0.15);
-      Y2.myPID->SetTunings(1,0.2,0.15);
+      X1.myPID->SetTunings(1,0.04,0.30);
+      X2.myPID->SetTunings(1,0.04,0.30);
+      Y1.myPID->SetTunings(1,0.04,0.30);
+      Y2.myPID->SetTunings(1,0.04,0.30);
   }
-//   if ((X1.distanceToGo() < 800) && (X2.distanceToGo() < 800) && (Y1.distanceToGo() < 800) && (Y2.distanceToGo() < 800))
-//  {
-//      X1.myPID->SetTunings(.05,1,.9);
-//      X2.myPID->SetTunings(.05,1,.9);
-//      Y1.myPID->SetTunings(.05,1,.9);
-//      Y2.myPID->SetTunings(.05,1,.9);
-//  }
-//  else if ((X1.distanceToGo() < 1800) && (X2.distanceToGo() < 1800) && (Y1.distanceToGo() < 1800) && (Y2.distanceToGo() < 1800))
-//  {
-//      X1.myPID->SetTunings(.1,.5,.7);
-//      X2.myPID->SetTunings(.1,.5,.7);
-//      Y1.myPID->SetTunings(.1,.5,.7);
-//      Y2.myPID->SetTunings(.1,.5,.7);
-//  }
-//  else
-//  {
-//      
-//      X1.myPID->SetTunings(.3,0.2,0.15);
-//      X2.myPID->SetTunings(.3,0.2,0.15);
-//      Y1.myPID->SetTunings(.3,0.2,0.15);
-//      Y2.myPID->SetTunings(.3,0.2,0.15);
-//  }     
-  
-//      X1.myPID->SetTunings(.4,0.1,0.4);
-//      X2.myPID->SetTunings(.4,0.1,0.4);
-//      Y1.myPID->SetTunings(.4,0.1,0.4);
-//      Y2.myPID->SetTunings(.4,0.1,0.4);
-//      if (whichSync == 0)
-//      {
-//        synchronizeTwo(X1, X2);
-//      }
-//      else if (whichSync == 1)
-//      {
-//        synchronizeTwo(Y2, Y1);
-//      }
-//      else
-//      {
-        //synchronizeTwo(X1, X2);
-        synchronizeTwo(Y2, Y1);
-        //synchronizeTwo(X2, Y2);
-        //synchronizeTwo(Y1, X1);
-//      }
-//  }
 
-
+  if (whichSync == 0)
+  {
+    synchronizeTwo(X1, X2);
+  }
+  else if (whichSync == 1)
+  {
+    synchronizeTwo(Y2, Y1);
+  }
+  else
+  {
+    synchronizeTwo(X1, X2);
+    synchronizeTwo(Y2, Y1);
+    synchronizeTwo(X2, Y2);
+    synchronizeTwo(Y1, X1);
+  }
 
     
   //Whenever the distance to go reaches zero for both motors
@@ -197,16 +158,6 @@ Serial.println(Y2.getActualPosition());
       X2.stop();
       Y1.stop();
       Y2.stop();
-      
-      X1.setCurrentPosition(0);
-      X2.setCurrentPosition(0);
-      Y1.setCurrentPosition(0);
-      Y2.setCurrentPosition(0);
-      
-      X1.setSetPoint(0);
-      X2.setSetPoint(0);
-      Y1.setSetPoint(0);
-      Y2.setSetPoint(0);
   
        //This variable is used to keep track of the state of the Motors. When the Motors are in Standby Mode waiting for a command and while they
        //are moving, state is written to 1. When the motors reach their destination and the distance to move is 0, state is written to 0,
@@ -282,7 +233,7 @@ Serial.println(Y2.getActualPosition());
     Y2.run();
 }
 
-void receiveEvent (int numBytes)
+void receiveEvent (size_t numBytes)
 {
     Serial.println("Received" + numBytes);
     //When the wire is available, read the four Bytes
@@ -420,8 +371,8 @@ void moveHere()
          {
            case 0: whichSync = 1; moveNorth(distance); break;
            case 1: whichSync = 1; moveSouth(distance); break;
-           case 2: whichSync = 0; moveWest(distance); break;
-           case 3: whichSync = 0; moveEast(distance); break;
+           case 2: whichSync = 0; moveEast(distance); break;
+           case 3: whichSync = 0; moveWest(distance); break;
            case 4: whichSync = 2; distance = getMM(ANGLE_CONVER*dist); spin(distance); break;
            case 5: whichSync = 2; distance = getMM(ANGLE_CONVER*dist); spin(-distance); break;
            case 6: whichSync = 2; moveQuadrantI(distance); break;
@@ -430,6 +381,7 @@ void moveHere()
            case 9: whichSync = 2; moveQuadrantIV(distance); break;
            case 10: goThroughTunnel0();break;
            case 11: goThroughTunnel1();break;
+           case 12: CPU_RESTART /*_reboot_Teensyduino_(); setEverything();*/ break;
          }
 }
 
@@ -474,7 +426,7 @@ void synchronizeTwo(DCMotorServo a, DCMotorServo b)
    }
    
    int minimumMoveSpeed = 0;
-   int synchSpeed = 1.9;
+   int synchSpeed = 2;
    int difference = 0;
    int raiseSpeed = 0; 
    int lowerSpeed = 0;
@@ -556,9 +508,9 @@ void moveSouth(int distance)
 void moveQuadrantI(int distance)
 {
   X1.move(distance);
-  X2.move(-distance);
+  //X2.move(-distance);
   Y1.move(-distance);
-  Y2.move(-distance);                                             
+  //Y2.move(-distance);                                             
 }
 
 void moveQuadrantII(int distance)                                 //The rest of the movement commands are self explanatory
@@ -588,41 +540,39 @@ void moveQuadrantIV(int distance)
 void goThroughTunnel0()
 {
   whichSync = 0;
-  moveWest(getMM(150));
-  
+  moveWest(150);
   delay(100);
   whichSync = 1;
-  moveNorth(getMM(450));
+  moveNorth(450);
   delay(100);
   whichSync = 2;
-  spin(getMM(ANGLE_CONVER*45));
+  spin(ANGLE_CONVER*45);
   delay(100);
-  moveQuadrantII(getMM(500));
+  moveQuadrantII(500);
   delay(100);
   whichSync = 1;
-  moveNorth(getMM(1000));
+  moveNorth(1000);
   
 }
 void goThroughTunnel1()
 {
   whichSync = 0;
-  moveEast(getMM(150));
+  moveEast(150);
   delay(100);
   whichSync = 1;
-  moveNorth(getMM(400));
+  moveNorth(450);
   delay(100);
   whichSync = 2;
-  spin(getMM(-ANGLE_CONVER*45));
+  spin(-ANGLE_CONVER*45);
   delay(100);
-  moveQuadrantI(getMM(500));
+  moveQuadrantI(500);
   delay(100);
   whichSync = 1;
-  moveNorth(getMM(1000)); 
+  moveNorth(1000);
+  
 }
-
 double getMM(int distance){
   //22400 because it takes 4480 counts per revolution and *10 because Derek said so
   //d = 70.29 mm
   return (distance*4480)/220.8225476208265667;
 }
-

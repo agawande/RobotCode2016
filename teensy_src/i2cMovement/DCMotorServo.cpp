@@ -1,4 +1,4 @@
-#include <DCMotorServo.h>
+#include "DCMotorServo.h"
 
 
 DCMotorServo::DCMotorServo(uint8_t pinDirA, uint8_t pinDirB, uint8_t pinPWM, uint8_t pin_encode1, uint8_t pin_encode2)
@@ -34,16 +34,6 @@ DCMotorServo::DCMotorServo(uint8_t pinDirA, uint8_t pinDirB, uint8_t pinPWM, uin
 void DCMotorServo::setEncoderNormalize()
 {
   _normalize = getActualPosition();
-}
-
-void DCMotorServo::setSetPoint(int set)
-{
-  _PID_setpoint = set;
-}
-
-void DCMotorServo::setSampleTime(int setSample)
-{
-  myPID->SetSampleTime(setSample);
 }
 
 int DCMotorServo::getEncoderNormalize()
